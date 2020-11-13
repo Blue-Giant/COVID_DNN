@@ -1,7 +1,7 @@
 """
 @author: LXA
-Benchmark Code of Biharmonic equations.
-
+Benchmark Code of SEIRD model
+2020-11-13
 """
 import os
 import sys
@@ -19,7 +19,6 @@ import saveData
 
 # 记录字典中的一些设置
 def dictionary_out2file(R_dic, log_fileout):
-    DNN_tools.log_string('Equation type for problem: %s\n' % (R_dic['eqs_type']), log_fileout)
     DNN_tools.log_string('Equation name for problem: %s\n' % (R_dic['eqs_name']), log_fileout)
     DNN_tools.log_string('Network model of solving problem: %s\n' % str(R_dic['model']), log_fileout)
     DNN_tools.log_string('activate function: %s\n' % str(R_dic['act_name']), log_fileout)
@@ -27,52 +26,54 @@ def dictionary_out2file(R_dic, log_fileout):
     if (R_dic['optimizer_name']).title() == 'Adam':
         DNN_tools.log_string('optimizer:%s\n' % str(R_dic['optimizer_name']), log_fileout)
     else:
-        DNN_tools.log_string('optimizer:%s  with momentum=%f\n' % (R_dic['optimizer_name'], R_dic['momentum']), log_fileout)
+        DNN_tools.log_string('optimizer:%s  with momentum=%f\n' % (R_dic['optimizer_name'], R_dic['momentum']),
+                             log_fileout)
 
     if R_dic['activate_stop'] != 0:
         DNN_tools.log_string('activate the stop_step and given_step= %s\n' % str(R_dic['max_epoch']), log_fileout)
     else:
-        DNN_tools.log_string('no activate the stop_step and given_step = default: %s\n' % str(R_dic['max_epoch']), log_fileout)
+        DNN_tools.log_string('no activate the stop_step and given_step = default: %s\n' % str(R_dic['max_epoch']),
+                             log_fileout)
 
     DNN_tools.log_string('Init learning rate: %s\n' % str(R_dic['learning_rate']), log_fileout)
 
     DNN_tools.log_string('Decay to learning rate: %s\n' % str(R_dic['lr_decay']), log_fileout)
 
-    DNN_tools.log_string('Batch-size 2 interior: %s\n' % str(R_dic['batch_size2interior']), log_fileout)
+    DNN_tools.log_string('Initial boundary penalty: %s\n' % str(R_dic['init_bd_penalty']), log_fileout)
+
+    DNN_tools.log_string('Batch-size 2 training: %s\n' % str(R_dic['batch_size']), log_fileout)
 
 
-def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_bd, loss_s_tmp, loss_e_tmp, loss_i_tmp, loss_r_tmp,
-                        loss_d_tmp, loss_n_tmp, log_out=None):
+def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_nt, penalty_wb2s, penalty_wb2e, penalty_wb2i, penalty_wb2r,
+                        loss_s, loss_e, loss_i, loss_r, loss_n, log_out=None):
     print('train epoch: %d, time: %.3f' % (i_epoch, run_time))
     print('learning rate: %f' % tmp_lr)
-    print('boundary penalty: %f' % temp_penalty_bd)
-    print('loss for S: %.10f' % loss_s_tmp)
-    print('loss for E: %.10f' % loss_e_tmp)
-    print('loss for I: %.10f' % loss_i_tmp)
-    print('loss for R: %.10f' % loss_r_tmp)
-    print('loss for D: %.10f' % loss_d_tmp)
-    print('loss for N: %.10f' % loss_n_tmp)
+    print('penalty for difference of predict and true : %f' % temp_penalty_nt)
+    print('penalty weights and biases for S: %f' % penalty_wb2s)
+    print('penalty weights and biases for S: %f' % penalty_wb2e)
+    print('penalty weights and biases for I: %f' % penalty_wb2i)
+    print('penalty weights and biases for R: %f' % penalty_wb2r)
+    print('loss for S: %.10f' % loss_s)
+    print('loss for S: %.10f' % loss_e)
+    print('loss for I: %.10f' % loss_i)
+    print('loss for R: %.10f' % loss_r)
+    print('total loss: %.10f' % loss_n)
 
     DNN_tools.log_string('train epoch: %d,time: %.3f' % (i_epoch, run_time), log_out)
     DNN_tools.log_string('learning rate: %f' % tmp_lr, log_out)
-    DNN_tools.log_string('boundary penalty: %f' % temp_penalty_bd, log_out)
-    DNN_tools.log_string('loss for S: %.10f' % loss_s_tmp, log_out)
-    DNN_tools.log_string('loss for E: %.10f' % loss_e_tmp, log_out)
-    DNN_tools.log_string('loss for I: %.10f' % loss_i_tmp, log_out)
-    DNN_tools.log_string('loss for R: %.10f' % loss_r_tmp, log_out)
-    DNN_tools.log_string('loss for D: %.10f' % loss_d_tmp, log_out)
-    DNN_tools.log_string('loss for N: %.10f' % loss_n_tmp, log_out)
+    DNN_tools.log_string('penalty for difference of predict and true : %f' % temp_penalty_nt, log_out)
+    DNN_tools.log_string('penalty weights and biases for S: %f' % penalty_wb2s, log_out)
+    DNN_tools.log_string('penalty weights and biases for S: %f' % penalty_wb2e, log_out)
+    DNN_tools.log_string('penalty weights and biases for I: %f' % penalty_wb2i, log_out)
+    DNN_tools.log_string('penalty weights and biases for R: %f' % penalty_wb2r, log_out)
+    DNN_tools.log_string('loss for S: %.10f' % loss_s, log_out)
+    DNN_tools.log_string('loss for S: %.10f' % loss_e, log_out)
+    DNN_tools.log_string('loss for I: %.10f' % loss_i, log_out)
+    DNN_tools.log_string('loss for R: %.10f' % loss_r, log_out)
+    DNN_tools.log_string('total loss: %.10f' % loss_n, log_out)
 
 
-def print_and_log2test(mse2test, res2test, log_out=None):
-    print('mean square error of predict and real for testing: %.10f' % mse2test)
-    print('residual error of predict and real for testing: %.10f\n' % res2test)
-
-    DNN_tools.log_string('mean square error of predict and real for testing: %.10f' % mse2test, log_out)
-    DNN_tools.log_string('residual error of predict and real for testing: %.10f\n\n' % res2test, log_out)
-
-
-def solve_COVID(R):
+def solve_SEIRD2COVID(R):
     log_out_path = R['FolderName']        # 将路径从字典 R 中提取出来
     if not os.path.exists(log_out_path):  # 判断路径是否已经存在
         os.mkdir(log_out_path)            # 无 log_out_path 路径，创建一个 log_out_path 路径
@@ -255,32 +256,7 @@ def solve_COVID(R):
             train_Loss2N = my_optimizer.minimize(Loss2N, global_step=global_steps)
             train_Loss = tf.group(train_Loss2S, train_Loss2E, train_Loss2I, train_Loss2R, train_Loss2D, train_Loss2N)
 
-    t0 = time.time()
-    loss2s_all, loss2e_all, loss2i_all, loss2r_all, loss2d_all, loss2n_all = [], [], [], [], [], []
-    test_mse2s_all, test_mse2e_all, test_mse2i_all, test_mse2r_all, test_mse2d_all = [], [], [], [], []
-    test_rel2s_all, test_rel2e_all, test_rel2i_all, test_rel2r_all, test_rel2d_all = [], [], [], [], []
-    test_epoch = []
 
-    if R['testData_model'] == 'random_generate':
-        # 生成测试数据，用于测试训练后的网络
-        test_bach_size = 1600
-        size2test = 40
-        # test_bach_size = 4900
-        # size2test = 70
-        # test_bach_size = 10000
-        # size2test = 100
-        # test_bach_size = 40000
-        # size2test = 200
-        # test_bach_size = 250000
-        # size2test = 500
-        test_xy_bach = DNN_data.rand_it(test_bach_size, input_dim, region_lb, region_rt)
-        saveData.save_testData_or_solus2mat(test_xy_bach, dataName='testXY', outPath=R['FolderName'])
-    else:
-        test_bach_size = 1600
-        size2test = 40
-        mat_data_path = 'data2mat'
-        test_xy_bach = matData2Biharmonic.get_data2Biharmonic(dim=input_dim, data_path=mat_data_path)
-        saveData.save_testData_or_solus2mat(test_xy_bach, dataName='testXY', outPath=R['FolderName'])
 
     # ConfigProto 加上allow_soft_placement=True就可以使用 gpu 了
     config = tf.ConfigProto(allow_soft_placement=True)  # 创建sess的时候对sess进行参数配置
@@ -410,7 +386,7 @@ if __name__ == "__main__":
     R['gpuNo'] = 0  # 默认使用 GPU，这个标记就不要设为-1，设为0,1,2,3,4....n（n指GPU的数目，即电脑有多少块GPU）
 
     # 文件保存路径设置
-    store_file = 'both2D'
+    store_file = 'SIR2covid'
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(BASE_DIR)
     OUT_DIR = os.path.join(BASE_DIR, store_file)
@@ -442,42 +418,37 @@ if __name__ == "__main__":
         epoch_stop = input('please input a stop epoch:')
         R['max_epoch'] = int(epoch_stop)
 
-    # ---------------------------- Setup of PDE_DNNs -------------------------------
-    R['eqs_type'] = 'general_Biharmonic'
-    # R['eqs_name'] = 'Dirichlet1'
-
-    R['input_dim'] = 2                    # 输入维数，即问题的维数(几元问题)
+    R['eqs_name'] = 'SEIR'
+    R['input_dim'] = 1                    # 输入维数，即问题的维数(几元问题)
     R['output_dim'] = 1                   # 输出维数
-    R['variational_loss'] = 1             # PDE变分
 
     # ------------------------------------  神经网络的设置  ----------------------------------------
-    R['batch_size2interior'] = 3000       # 内部训练数据的批大小
-    R['testData_model'] = 'loadData'
+    R['batch_size'] = 5                   # 训练数据的批大小
 
-    R['init_bd_penalty'] = 500            # Regularization parameter for boundary conditions
+    R['init_bd_penalty'] = 50             # Regularization parameter for boundary conditions
     R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
-        R['init_bd_penalty'] = 5
+        R['init_bd_penalty'] = 1
 
-    R['regular_weight_model'] = 'L0'
+    # R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
-    # R['regular_weight_model'] = 'L2'
-    R['regular_weight'] = 0.000           # Regularization parameter for weights
-    # R['regular_weight'] = 0.001         # Regularization parameter for weights
+    R['regular_weight_model'] = 'L2'
+    # R['regular_weight'] = 0.000         # Regularization parameter for weights
+    R['regular_weight'] = 0.001           # Regularization parameter for weights
 
     if 50000 < R['max_epoch']:
-        R['learning_rate'] = 2e-4  # 学习率
-        R['lr_decay'] = 5e-5       # 学习率 decay
-    elif 20000 < R['max_epoch'] and 50000 >= R['max_epoch']:
-        R['learning_rate'] = 1e-4  # 学习率
-        R['lr_decay'] = 5e-5       # 学习率 decay
+        R['learning_rate'] = 2e-4         # 学习率
+        R['lr_decay'] = 5e-5              # 学习率 decay
+    elif (20000 < R['max_epoch'] and 50000 >= R['max_epoch']):
+        R['learning_rate'] = 1e-4         # 学习率
+        R['lr_decay'] = 5e-5              # 学习率 decay
     else:
-        R['learning_rate'] = 5e-5  # 学习率
-        R['lr_decay'] = 1e-5       # 学习率 decay
+        R['learning_rate'] = 5e-5         # 学习率
+        R['lr_decay'] = 1e-5              # 学习率 decay
     R['optimizer_name'] = 'Adam'          # 优化器
 
-    # R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
-    R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
+    R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
+    # R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
     # R['hidden_layers'] = (100, 100, 80, 60, 60, 40)
     # R['hidden_layers'] = (200, 100, 100, 80, 50, 50)
     # R['hidden_layers'] = (300, 200, 200, 100, 80, 80)
@@ -493,13 +464,13 @@ if __name__ == "__main__":
 
     # 激活函数的选择
     # R['act_name'] = 'relu'
-    # R['act_name'] = 'tanh'
+    R['act_name'] = 'tanh'
     # R['act_name'] = 'leaky_relu'
     # R['act_name'] = 'srelu'
     # R['act_name'] = 's2relu'
     # R['act_name'] = 'slrelu'
-    R['act_name'] = 'elu'
+    # R['act_name'] = 'elu'
     # R['act_name'] = 'selu'
     # R['act_name'] = 'phi'
 
-    solve_COVID(R)
+    solve_SEIRD2COVID(R)

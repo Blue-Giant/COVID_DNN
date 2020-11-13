@@ -1,7 +1,7 @@
 """
 @author: LXA
-Benchmark Code of Biharmonic equations.
-
+Benchmark Code of SIR model
+2020-11-13
 """
 import os
 import sys
@@ -274,13 +274,13 @@ if __name__ == "__main__":
         R['max_epoch'] = int(epoch_stop)
 
     R['eqs_name'] = 'SIR'
-    R['input_dim'] = 1                   # 输入维数，即问题的维数(几元问题)
+    R['input_dim'] = 1                    # 输入维数，即问题的维数(几元问题)
     R['output_dim'] = 1                   # 输出维数
 
     # ------------------------------------  神经网络的设置  ----------------------------------------
-    R['batch_size'] = 5      # 训练数据的批大小
+    R['batch_size'] = 5                   # 训练数据的批大小
 
-    R['init_bd_penalty'] = 50            # Regularization parameter for boundary conditions
+    R['init_bd_penalty'] = 50             # Regularization parameter for boundary conditions
     R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
         R['init_bd_penalty'] = 1
@@ -288,18 +288,18 @@ if __name__ == "__main__":
     # R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
     R['regular_weight_model'] = 'L2'
-    # R['regular_weight'] = 0.000           # Regularization parameter for weights
-    R['regular_weight'] = 0.001         # Regularization parameter for weights
+    # R['regular_weight'] = 0.000         # Regularization parameter for weights
+    R['regular_weight'] = 0.001           # Regularization parameter for weights
 
     if 50000 < R['max_epoch']:
-        R['learning_rate'] = 2e-4  # 学习率
-        R['lr_decay'] = 5e-5       # 学习率 decay
+        R['learning_rate'] = 2e-4         # 学习率
+        R['lr_decay'] = 5e-5              # 学习率 decay
     elif (20000 < R['max_epoch'] and 50000 >= R['max_epoch']):
-        R['learning_rate'] = 1e-4  # 学习率
-        R['lr_decay'] = 5e-5       # 学习率 decay
+        R['learning_rate'] = 1e-4         # 学习率
+        R['lr_decay'] = 5e-5              # 学习率 decay
     else:
-        R['learning_rate'] = 5e-5  # 学习率
-        R['lr_decay'] = 1e-5       # 学习率 decay
+        R['learning_rate'] = 5e-5         # 学习率
+        R['lr_decay'] = 1e-5              # 学习率 decay
     R['optimizer_name'] = 'Adam'          # 优化器
 
     R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work

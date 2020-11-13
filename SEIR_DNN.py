@@ -1,7 +1,7 @@
 """
 @author: LXA
-Benchmark Code of Biharmonic equations.
-
+Benchmark Code of SEIR model
+2020-11-13
 """
 import os
 import sys
@@ -19,7 +19,6 @@ import saveData
 
 # 记录字典中的一些设置
 def dictionary_out2file(R_dic, log_fileout):
-    DNN_tools.log_string('Equation type for problem: %s\n' % (R_dic['eqs_type']), log_fileout)
     DNN_tools.log_string('Equation name for problem: %s\n' % (R_dic['eqs_name']), log_fileout)
     DNN_tools.log_string('Network model of solving problem: %s\n' % str(R_dic['model']), log_fileout)
     DNN_tools.log_string('activate function: %s\n' % str(R_dic['act_name']), log_fileout)
@@ -27,66 +26,54 @@ def dictionary_out2file(R_dic, log_fileout):
     if (R_dic['optimizer_name']).title() == 'Adam':
         DNN_tools.log_string('optimizer:%s\n' % str(R_dic['optimizer_name']), log_fileout)
     else:
-        DNN_tools.log_string('optimizer:%s  with momentum=%f\n' % (R_dic['optimizer_name'], R_dic['momentum']), log_fileout)
+        DNN_tools.log_string('optimizer:%s  with momentum=%f\n' % (R_dic['optimizer_name'], R_dic['momentum']),
+                             log_fileout)
 
     if R_dic['activate_stop'] != 0:
         DNN_tools.log_string('activate the stop_step and given_step= %s\n' % str(R_dic['max_epoch']), log_fileout)
     else:
-        DNN_tools.log_string('no activate the stop_step and given_step = default: %s\n' % str(R_dic['max_epoch']), log_fileout)
+        DNN_tools.log_string('no activate the stop_step and given_step = default: %s\n' % str(R_dic['max_epoch']),
+                             log_fileout)
 
     DNN_tools.log_string('Init learning rate: %s\n' % str(R_dic['learning_rate']), log_fileout)
 
     DNN_tools.log_string('Decay to learning rate: %s\n' % str(R_dic['lr_decay']), log_fileout)
 
-    if 1 == R['Dirichlet_boundary']:
-        DNN_tools.log_string('Boundary types to derivative: %s\n' % str('Dirichlet boundary'), log_fileout)
-    else:
-        DNN_tools.log_string('Boundary types to derivative: %s\n' % str('Navier boundary'), log_fileout)
     DNN_tools.log_string('Initial boundary penalty: %s\n' % str(R_dic['init_bd_penalty']), log_fileout)
-    DNN_tools.log_string('Batch-size 2 boundary: %s\n' % str(R_dic['batch_size2boundary']), log_fileout)
 
-    DNN_tools.log_string('Batch-size 2 interior: %s\n' % str(R_dic['batch_size2interior']), log_fileout)
-
-    if R_dic['variational_loss'] == 1:
-        DNN_tools.log_string('Loss function: variational loss\n', log_fileout)
-    else:
-        DNN_tools.log_string('Loss function: original function loss\n', log_fileout)
+    DNN_tools.log_string('Batch-size 2 training: %s\n' % str(R_dic['batch_size']), log_fileout)
 
 
-def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_bd, penalty_wb, loss_it_tmp, loss_bd_tmp, loss_bd2_tmp,
-                        loss_tmp, train_mse_tmp, train_res_tmp, log_out=None):
+def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_nt, penalty_wb2s, penalty_wb2e, penalty_wb2i, penalty_wb2r,
+                        loss_s, loss_e, loss_i, loss_r, loss_n, log_out=None):
     print('train epoch: %d, time: %.3f' % (i_epoch, run_time))
     print('learning rate: %f' % tmp_lr)
-    print('boundary penalty: %f' % temp_penalty_bd)
-    print('weights and biases with  penalty: %f' % penalty_wb)
-    print('loss_it for training: %.10f' % loss_it_tmp)
-    print('loss_bd for training: %.10f' % loss_bd_tmp)
-    print('loss_bd to derivative for training: %.10f' % loss_bd2_tmp)
-    print('total loss for training: %.10f' % loss_tmp)
-    print('function mean square error for training: %.10f' % train_mse_tmp)
-    print('function residual error for training: %.10f\n' % train_res_tmp)
+    print('penalty for difference of predict and true : %f' % temp_penalty_nt)
+    print('penalty weights and biases for S: %f' % penalty_wb2s)
+    print('penalty weights and biases for S: %f' % penalty_wb2e)
+    print('penalty weights and biases for I: %f' % penalty_wb2i)
+    print('penalty weights and biases for R: %f' % penalty_wb2r)
+    print('loss for S: %.10f' % loss_s)
+    print('loss for S: %.10f' % loss_e)
+    print('loss for I: %.10f' % loss_i)
+    print('loss for R: %.10f' % loss_r)
+    print('total loss: %.10f' % loss_n)
 
     DNN_tools.log_string('train epoch: %d,time: %.3f' % (i_epoch, run_time), log_out)
     DNN_tools.log_string('learning rate: %f' % tmp_lr, log_out)
-    DNN_tools.log_string('boundary penalty: %f' % temp_penalty_bd, log_out)
-    DNN_tools.log_string('weights and biases with  penalty: %f' % penalty_wb, log_out)
-    DNN_tools.log_string('loss_it for training: %.10f' % loss_it_tmp, log_out)
-    DNN_tools.log_string('loss_bd for training: %.10f' % loss_bd_tmp, log_out)
-    DNN_tools.log_string('loss_bd to derivative for training: %.10f' % loss_bd2_tmp, log_out)
-    DNN_tools.log_string('total loss for training: %.10f' % loss_tmp, log_out)
-    DNN_tools.log_string('function mean square error for training: %.10f' % train_mse_tmp, log_out)
-    DNN_tools.log_string('function residual error for training: %.10f\n' % train_res_tmp, log_out)
+    DNN_tools.log_string('penalty for difference of predict and true : %f' % temp_penalty_nt, log_out)
+    DNN_tools.log_string('penalty weights and biases for S: %f' % penalty_wb2s, log_out)
+    DNN_tools.log_string('penalty weights and biases for S: %f' % penalty_wb2e, log_out)
+    DNN_tools.log_string('penalty weights and biases for I: %f' % penalty_wb2i, log_out)
+    DNN_tools.log_string('penalty weights and biases for R: %f' % penalty_wb2r, log_out)
+    DNN_tools.log_string('loss for S: %.10f' % loss_s, log_out)
+    DNN_tools.log_string('loss for S: %.10f' % loss_e, log_out)
+    DNN_tools.log_string('loss for I: %.10f' % loss_i, log_out)
+    DNN_tools.log_string('loss for R: %.10f' % loss_r, log_out)
+    DNN_tools.log_string('total loss: %.10f' % loss_n, log_out)
 
 
-def print_and_log2test(mse2test, res2test, log_out=None):
-    print('mean square error of predict and real for testing: %.10f' % mse2test)
-    print('residual error of predict and real for testing: %.10f\n' % res2test)
-
-    DNN_tools.log_string('mean square error of predict and real for testing: %.10f' % mse2test, log_out)
-    DNN_tools.log_string('residual error of predict and real for testing: %.10f\n\n' % res2test, log_out)
-
-
-def solve_COVID(R):
+def solve_SEIR2COVID(R):
     log_out_path = R['FolderName']        # 将路径从字典 R 中提取出来
     if not os.path.exists(log_out_path):  # 判断路径是否已经存在
         os.mkdir(log_out_path)            # 无 log_out_path 路径，创建一个 log_out_path 路径
@@ -164,3 +151,98 @@ def solve_COVID(R):
             loss_dt2NNs = tf.reduce_mean(loss_temp)
 
             Loss2S = 1
+
+
+if __name__ == "__main__":
+    R={}
+    R['gpuNo'] = 0  # 默认使用 GPU，这个标记就不要设为-1，设为0,1,2,3,4....n（n指GPU的数目，即电脑有多少块GPU）
+
+    # 文件保存路径设置
+    store_file = 'SIR2covid'
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    sys.path.append(BASE_DIR)
+    OUT_DIR = os.path.join(BASE_DIR, store_file)
+    if not os.path.exists(OUT_DIR):
+        print('---------------------- OUT_DIR ---------------------:', OUT_DIR)
+        os.mkdir(OUT_DIR)
+
+    R['seed'] = np.random.randint(1e5)
+    seed_str = str(R['seed'])                     # int 型转为字符串型
+    FolderName = os.path.join(OUT_DIR, seed_str)  # 路径连接
+    R['FolderName'] = FolderName
+    if not os.path.exists(FolderName):
+        print('--------------------- FolderName -----------------:', FolderName)
+        os.mkdir(FolderName)
+
+    # ----------------------------------------  复制并保存当前文件 -----------------------------------------
+    if platform.system() == 'Windows':
+        tf.compat.v1.reset_default_graph()
+        shutil.copy(__file__, '%s/%s' % (FolderName, os.path.basename(__file__)))
+    else:
+        shutil.copy(__file__, '%s/%s' % (FolderName, os.path.basename(__file__)))
+
+    # if the value of step_stop_flag is not 0, it will activate stop condition of step to kill program
+    step_stop_flag = input('please input an  integer number to activate step-stop----0:no---!0:yes--:')
+    R['activate_stop'] = int(step_stop_flag)
+    # if the value of step_stop_flag is not 0, it will activate stop condition of step to kill program
+    R['max_epoch'] = 200000
+    if 0 != R['activate_stop']:
+        epoch_stop = input('please input a stop epoch:')
+        R['max_epoch'] = int(epoch_stop)
+
+    R['eqs_name'] = 'SEIR'
+    R['input_dim'] = 1                    # 输入维数，即问题的维数(几元问题)
+    R['output_dim'] = 1                   # 输出维数
+
+    # ------------------------------------  神经网络的设置  ----------------------------------------
+    R['batch_size'] = 5                   # 训练数据的批大小
+
+    R['init_bd_penalty'] = 50             # Regularization parameter for boundary conditions
+    R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
+    if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
+        R['init_bd_penalty'] = 1
+
+    # R['regular_weight_model'] = 'L0'
+    # R['regular_weight_model'] = 'L1'
+    R['regular_weight_model'] = 'L2'
+    # R['regular_weight'] = 0.000         # Regularization parameter for weights
+    R['regular_weight'] = 0.001           # Regularization parameter for weights
+
+    if 50000 < R['max_epoch']:
+        R['learning_rate'] = 2e-4         # 学习率
+        R['lr_decay'] = 5e-5              # 学习率 decay
+    elif (20000 < R['max_epoch'] and 50000 >= R['max_epoch']):
+        R['learning_rate'] = 1e-4         # 学习率
+        R['lr_decay'] = 5e-5              # 学习率 decay
+    else:
+        R['learning_rate'] = 5e-5         # 学习率
+        R['lr_decay'] = 1e-5              # 学习率 decay
+    R['optimizer_name'] = 'Adam'          # 优化器
+
+    R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
+    # R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
+    # R['hidden_layers'] = (100, 100, 80, 60, 60, 40)
+    # R['hidden_layers'] = (200, 100, 100, 80, 50, 50)
+    # R['hidden_layers'] = (300, 200, 200, 100, 80, 80)
+    # R['hidden_layers'] = (400, 300, 300, 200, 100, 100)
+    # R['hidden_layers'] = (500, 400, 300, 200, 200, 100, 100)
+    # R['hidden_layers'] = (600, 400, 400, 300, 200, 200, 100)
+    # R['hidden_layers'] = (1000, 500, 400, 300, 300, 200, 100, 100)
+
+    # 网络模型的选择
+    R['model'] = 'PDE_DNN'
+    # R['model'] = 'PDE_DNN_BN'
+    # R['model'] = 'PDE_DNN_scale'
+
+    # 激活函数的选择
+    # R['act_name'] = 'relu'
+    R['act_name'] = 'tanh'
+    # R['act_name'] = 'leaky_relu'
+    # R['act_name'] = 'srelu'
+    # R['act_name'] = 's2relu'
+    # R['act_name'] = 'slrelu'
+    # R['act_name'] = 'elu'
+    # R['act_name'] = 'selu'
+    # R['act_name'] = 'phi'
+
+    solve_SEIR2COVID(R)
