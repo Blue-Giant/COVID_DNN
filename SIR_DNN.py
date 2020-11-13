@@ -67,7 +67,7 @@ def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_bd, penalty_wb2s
     DNN_tools.log_string('total loss: %.10f' % loss_n, log_out)
 
 
-def solve_SIR2COVID19(R):
+def solve_SIR2COVID(R):
     log_out_path = R['FolderName']        # 将路径从字典 R 中提取出来
     if not os.path.exists(log_out_path):  # 判断路径是否已经存在
         os.mkdir(log_out_path)            # 无 log_out_path 路径，创建一个 log_out_path 路径
@@ -275,16 +275,16 @@ if __name__ == "__main__":
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
         R['init_bd_penalty'] = 1
 
-    R['regular_weight_model'] = 'L0'
+    # R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
-    # R['regular_weight_model'] = 'L2'
-    R['regular_weight'] = 0.000           # Regularization parameter for weights
-    # R['regular_weight'] = 0.001         # Regularization parameter for weights
+    R['regular_weight_model'] = 'L2'
+    # R['regular_weight'] = 0.000           # Regularization parameter for weights
+    R['regular_weight'] = 0.001         # Regularization parameter for weights
 
     if 50000 < R['max_epoch']:
         R['learning_rate'] = 2e-4  # 学习率
         R['lr_decay'] = 5e-5       # 学习率 decay
-    elif 20000 < R['max_epoch'] and 50000 >= R['max_epoch']:
+    elif (20000 < R['max_epoch'] and 50000 >= R['max_epoch']):
         R['learning_rate'] = 1e-4  # 学习率
         R['lr_decay'] = 5e-5       # 学习率 decay
     else:
@@ -318,4 +318,4 @@ if __name__ == "__main__":
     # R['act_name'] = 'selu'
     # R['act_name'] = 'phi'
 
-    solve_SIR2COVID19(R)
+    solve_SIR2COVID(R)
