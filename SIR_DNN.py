@@ -42,11 +42,11 @@ def dictionary_out2file(R_dic, log_fileout):
     DNN_tools.log_string('Batch-size 2 training: %s\n' % str(R_dic['batch_size']), log_fileout)
 
 
-def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_bd, penalty_wb2s, penalty_wb2i, penalty_wb2r,
+def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_nt, penalty_wb2s, penalty_wb2i, penalty_wb2r,
                         loss_s, loss_i, loss_r, loss_n, log_out=None):
     print('train epoch: %d, time: %.3f' % (i_epoch, run_time))
     print('learning rate: %f' % tmp_lr)
-    print('boundary penalty: %f' % temp_penalty_bd)
+    print('penalty for difference of predict and true : %f' % temp_penalty_nt)
     print('penalty weights and biases for S: %f' % penalty_wb2s)
     print('penalty weights and biases for I: %f' % penalty_wb2i)
     print('penalty weights and biases for R: %f' % penalty_wb2r)
@@ -57,7 +57,7 @@ def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_bd, penalty_wb2s
 
     DNN_tools.log_string('train epoch: %d,time: %.3f' % (i_epoch, run_time), log_out)
     DNN_tools.log_string('learning rate: %f' % tmp_lr, log_out)
-    DNN_tools.log_string('boundary penalty: %f' % temp_penalty_bd, log_out)
+    DNN_tools.log_string('penalty for difference of predict and true : %f' % temp_penalty_nt, log_out)
     DNN_tools.log_string('penalty weights and biases for S: %f' % penalty_wb2s, log_out)
     DNN_tools.log_string('penalty weights and biases for I: %f' % penalty_wb2i, log_out)
     DNN_tools.log_string('penalty weights and biases for R: %f' % penalty_wb2r, log_out)
@@ -75,8 +75,8 @@ def solve_SIR2COVID(R):
     dictionary_out2file(R, log_fileout)
 
     size2batch = R['batch_size']
-    nn_true_penalty_init = R['init_bd_penalty']            # Regularization parameter for boundary conditions
-    wb_penalty = R['regular_weight']                  # Regularization parameter for weights
+    pt_penalty_init = R['init_penalty2predict_true']   # Regularization parameter for difference of predict and true
+    wb_penalty = R['regular_weight']                   # Regularization parameter for weights
     lr_decay = R['lr_decay']
     learning_rate = R['learning_rate']
     act_func = R['act_name']
@@ -87,10 +87,14 @@ def solve_SIR2COVID(R):
     flag2S = 'WB2S'
     flag2I = 'WB2I'
     flag2R = 'WB2R'
+    flag2beta = 'WB2beta'
+    flag2gamma = 'WB2gamma'
     hidden_layers = R['hidden_layers']
     Weight2S, Bias2S = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2S)
     Weight2I, Bias2I = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2I)
     Weight2R, Bias2R = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2R)
+    Weight2beta, Bias2beta = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2beta)
+    Weight2gamma, Bias2gamma = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2gamma)
 
     global_steps = tf.Variable(0, trainable=False)
     with tf.device('/gpu:%s' % (R['gpuNo'])):
@@ -98,27 +102,33 @@ def solve_SIR2COVID(R):
             T_it = tf.placeholder(tf.float32, name='T_it', shape=[None, out_dim])
             I_observe = tf.placeholder(tf.float32, name='I_observe', shape=[None, out_dim])
             N_observe = tf.placeholder(tf.float32, name='N_observe', shape=[None, out_dim])
-            nn_true_penalty = tf.placeholder_with_default(input=1e3, shape=[], name='bd_p')
+            predict_true_penalty = tf.placeholder_with_default(input=1e3, shape=[], name='bd_p')
             in_learning_rate = tf.placeholder_with_default(input=1e-5, shape=[], name='lr')
-            in_beta = tf.placeholder_with_default(input=1e-5, shape=[], name='beta')
-            in_gamma = tf.placeholder_with_default(input=1e-5, shape=[], name='lr')
+            # in_beta = tf.placeholder_with_default(input=1e-5, shape=[], name='beta')
+            # in_gamma = tf.placeholder_with_default(input=1e-5, shape=[], name='lr')
             train_opt = tf.placeholder_with_default(input=True, shape=[], name='train_opt')
-            beta = tf.exp(in_beta)
-            gamma = tf.exp(in_gamma)
             if 'PDE_DNN' == str.upper(R['model']):
                 S_NN = DNN_base.PDE_DNN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
                 I_NN = DNN_base.PDE_DNN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func)
                 R_NN = DNN_base.PDE_DNN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
+                in_beta = DNN_base.PDE_DNN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
+                in_gamma = DNN_base.PDE_DNN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
             elif 'PDE_DNN_BN' == str.upper(R['model']):
                 S_NN = DNN_base.PDE_DNN_BN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func, is_training=train_opt)
                 I_NN = DNN_base.PDE_DNN_BN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func, is_training=train_opt)
                 R_NN = DNN_base.PDE_DNN_BN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func, is_training=train_opt)
+                in_beta = DNN_base.PDE_DNN_BN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func, is_training=train_opt)
+                in_gamma = DNN_base.PDE_DNN_BN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func, is_training=train_opt)
             elif 'PDE_DNN_SCALE' == str.upper(R['model']):
                 freq = np.concatenate(([1], np.arange(1, 100 - 1)), axis=0)
                 S_NN = DNN_base.PDE_DNN_scale(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
                 I_NN = DNN_base.PDE_DNN_scale(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
                 R_NN = DNN_base.PDE_DNN_scale(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
+                in_beta = DNN_base.PDE_DNN_scale(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
+                in_gamma = DNN_base.PDE_DNN_scale(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
+            beta = tf.exp(in_beta)
+            gamma = tf.exp(in_gamma)
             N_NN = S_NN + I_NN + R_NN
 
             dS_NN2t = tf.gradients(S_NN, T_it)[0]
@@ -136,11 +146,11 @@ def solve_SIR2COVID(R):
             LossN_Net_obs = tf.reduce_mean(tf.square(N_NN - N_observe))
 
             if R['regular_weight_model'] == 'L1':
-                regular_WB2S = DNN_base.regular_weights_biases_L1(Weight2S, Bias2S)      # 正则化权重参数 L1正则化
+                regular_WB2S = DNN_base.regular_weights_biases_L1(Weight2S, Bias2S)
                 regular_WB2I = DNN_base.regular_weights_biases_L1(Weight2I, Bias2I)
                 regular_WB2R = DNN_base.regular_weights_biases_L1(Weight2R, Bias2R)
             elif R['regular_weight_model'] == 'L2':
-                regular_WB2S = DNN_base.regular_weights_biases_L2(Weight2S, Bias2S)      # 正则化权重参数 L2正则化
+                regular_WB2S = DNN_base.regular_weights_biases_L2(Weight2S, Bias2S)
                 regular_WB2I = DNN_base.regular_weights_biases_L2(Weight2I, Bias2I)
                 regular_WB2R = DNN_base.regular_weights_biases_L2(Weight2R, Bias2R)
             else:
@@ -158,7 +168,7 @@ def solve_SIR2COVID(R):
             PWB2R = wb_penalty*regular_WB2R
 
             Loss2S = Loss2dS + PWB2S
-            Loss2I = nn_true_penalty*LossI_Net_obs + Loss2dI + PWB2I
+            Loss2I = predict_true_penalty*LossI_Net_obs + Loss2dI + PWB2I
             Loss2R = Loss2dR + PWB2R
             Loss2All = LossN_Net_obs + Loss2dN
 
@@ -190,39 +200,39 @@ def solve_SIR2COVID(R):
             train_option = True
             if R['activate_stage_penalty'] == 1:
                 if i_epoch < int(R['max_epoch'] / 10):
-                    temp_penalty_bd = nn_true_penalty_init
+                    temp_penalty_pt = pt_penalty_init
                 elif i_epoch < int(R['max_epoch'] / 5):
-                    temp_penalty_bd = 10 * nn_true_penalty_init
+                    temp_penalty_pt = 10 * pt_penalty_init
                 elif i_epoch < int(R['max_epoch'] / 4):
-                    temp_penalty_bd = 50 * nn_true_penalty_init
+                    temp_penalty_pt = 50 * pt_penalty_init
                 elif i_epoch < int(R['max_epoch'] / 2):
-                    temp_penalty_bd = 100 * nn_true_penalty_init
+                    temp_penalty_pt = 100 * pt_penalty_init
                 elif i_epoch < int(3 * R['max_epoch'] / 4):
-                    temp_penalty_bd = 200 * nn_true_penalty_init
+                    temp_penalty_pt = 200 * pt_penalty_init
                 else:
-                    temp_penalty_bd = 500 * nn_true_penalty_init
+                    temp_penalty_pt = 500 * pt_penalty_init
             elif R['activate_stage_penalty'] == 2:
                 if i_epoch < int(R['max_epoch'] / 3):
-                    temp_penalty_bd = nn_true_penalty_init
+                    temp_penalty_pt = pt_penalty_init
                 elif i_epoch < 2*int(R['max_epoch'] / 3):
-                    temp_penalty_bd = 10 * nn_true_penalty_init
+                    temp_penalty_pt = 10 * pt_penalty_init
                 else:
-                    temp_penalty_bd = 50 * nn_true_penalty_init
+                    temp_penalty_pt = 50 * pt_penalty_init
             else:
-                temp_penalty_bd = nn_true_penalty_init
+                temp_penalty_pt = pt_penalty_init
 
             _, loss_s, loss_i, loss_r, loss_n, pwb2s, pwb2i, pwb2r = sess.run(
                 [train_Loss, Loss2S, Loss2I, Loss2R, Loss2All, PWB2S, PWB2I, PWB2R],
                 feed_dict={T_it: t_batch, I_observe: i_obs,
                            N_observe: n_obs, in_learning_rate: tmp_lr, train_opt: train_option,
-                           nn_true_penalty: temp_penalty_bd})
+                           predict_true_penalty: temp_penalty_pt})
             loss_s_all.append(loss_s)
             loss_i_all.append(loss_i)
             loss_r_all.append(loss_r)
             loss_n_all.append(loss_n)
 
             if i_epoch % 1000 == 0:
-                print_and_log2train(i_epoch, time.time() - t0, tmp_lr, temp_penalty_bd, pwb2s, pwb2i, pwb2r, loss_s,
+                print_and_log2train(i_epoch, time.time() - t0, tmp_lr, temp_penalty_pt, pwb2s, pwb2i, pwb2r, loss_s,
                                     loss_i, loss_r, loss_n, log_out=log_fileout)
 
 
