@@ -23,6 +23,9 @@ def dictionary_out2file(R_dic, log_fileout):
     DNN_tools.log_string('Network model of solving problem: %s\n' % str(R_dic['model']), log_fileout)
     DNN_tools.log_string('activate function: %s\n' % str(R_dic['act_name']), log_fileout)
     DNN_tools.log_string('hidden layers: %s\n' % str(R_dic['hidden_layers']), log_fileout)
+    DNN_tools.log_string('Init learning rate: %s\n' % str(R_dic['learning_rate']), log_fileout)
+    DNN_tools.log_string('Decay to learning rate: %s\n' % str(R_dic['lr_decay']), log_fileout)
+    DNN_tools.log_string('The type for Loss function: %s\n' % str(R_dic['loss_function']), log_fileout)
     if (R_dic['optimizer_name']).title() == 'Adam':
         DNN_tools.log_string('optimizer:%s\n' % str(R_dic['optimizer_name']), log_fileout)
     else:
@@ -35,11 +38,9 @@ def dictionary_out2file(R_dic, log_fileout):
         DNN_tools.log_string('no activate the stop_step and given_step = default: %s\n' % str(R_dic['max_epoch']),
                              log_fileout)
 
-    DNN_tools.log_string('Init learning rate: %s\n' % str(R_dic['learning_rate']), log_fileout)
-
-    DNN_tools.log_string('Decay to learning rate: %s\n' % str(R_dic['lr_decay']), log_fileout)
-
-    DNN_tools.log_string('Initial boundary penalty: %s\n' % str(R_dic['init_bd_penalty']), log_fileout)
+    DNN_tools.log_string(
+        'Initial penalty for difference of predict and true: %s\n' % str(R_dic['init_penalty2predict_true']),
+        log_fileout)
 
     DNN_tools.log_string('Batch-size 2 training: %s\n' % str(R_dic['batch_size']), log_fileout)
 
@@ -158,7 +159,7 @@ if __name__ == "__main__":
     R['gpuNo'] = 0  # 默认使用 GPU，这个标记就不要设为-1，设为0,1,2,3,4....n（n指GPU的数目，即电脑有多少块GPU）
 
     # 文件保存路径设置
-    store_file = 'SIR2covid'
+    store_file = 'SEIR2covid'
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(BASE_DIR)
     OUT_DIR = os.path.join(BASE_DIR, store_file)
@@ -218,6 +219,8 @@ if __name__ == "__main__":
         R['learning_rate'] = 5e-5         # 学习率
         R['lr_decay'] = 1e-5              # 学习率 decay
     R['optimizer_name'] = 'Adam'          # 优化器
+    # R['loss_function'] = 'L2_loss'
+    R['loss_function'] = 'lncosh_loss'
 
     R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
     # R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
