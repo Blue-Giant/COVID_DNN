@@ -86,12 +86,14 @@ def solve_SIRD2COVID(R):
     flag2S = 'WB2S'
     flag2I = 'WB2I'
     flag2R = 'WB2R'
+    flag2D = 'WB2D'
     flag2beta = 'WB2beta'
     flag2gamma = 'WB2gamma'
     hidden_layers = R['hidden_layers']
     Weight2S, Bias2S = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2S)
     Weight2I, Bias2I = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2I)
     Weight2R, Bias2R = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2R)
+    Weight2D, Bias2D = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2D)
     Weight2beta, Bias2beta = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2beta)
     Weight2gamma, Bias2gamma = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2gamma)
 
@@ -110,12 +112,14 @@ def solve_SIRD2COVID(R):
                 S_NN = DNN_base.PDE_DNN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
                 I_NN = DNN_base.PDE_DNN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func)
                 R_NN = DNN_base.PDE_DNN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
+                D_NN = DNN_base.PDE_DNN(T_it, Weight2D, Bias2D, hidden_layers, activate_name=act_func)
                 in_beta = DNN_base.PDE_DNN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
             elif 'PDE_DNN_BN' == str.upper(R['model']):
                 S_NN = DNN_base.PDE_DNN_BN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func, is_training=train_opt)
                 I_NN = DNN_base.PDE_DNN_BN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func, is_training=train_opt)
                 R_NN = DNN_base.PDE_DNN_BN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func, is_training=train_opt)
+                D_NN = DNN_base.PDE_DNN_BN(T_it, Weight2D, Bias2D, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_beta = DNN_base.PDE_DNN_BN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_gamma = DNN_base.PDE_DNN_BN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func, is_training=train_opt)
             elif 'PDE_DNN_SCALE' == str.upper(R['model']):
@@ -123,6 +127,7 @@ def solve_SIRD2COVID(R):
                 S_NN = DNN_base.PDE_DNN_scale(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
                 I_NN = DNN_base.PDE_DNN_scale(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
                 R_NN = DNN_base.PDE_DNN_scale(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
+                D_NN = DNN_base.PDE_DNN_scale(T_it, Weight2D, Bias2D, hidden_layers, freq, activate_name=act_func)
                 in_beta = DNN_base.PDE_DNN_scale(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN_scale(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
@@ -133,61 +138,73 @@ def solve_SIRD2COVID(R):
             dS_NN2t = tf.gradients(S_NN, T_it)[0]
             dI_NN2t = tf.gradients(I_NN, T_it)[0]
             dR_NN2t = tf.gradients(R_NN, T_it)[0]
+            dD_NN2t = tf.gradients(D_NN, T_it)[0]
             dN_NN2t = tf.gradients(N_NN, T_it)[0]
 
             temp_snn2t = -beta*S_NN*I_NN
             temp_inn2t = beta*S_NN*I_NN - gamma * I_NN
             temp_rnn2t = gamma *I_NN
+            temp_dnn2t = gamma * I_NN
 
             if str.lower(R['loss_function']) == 'l2_loss':
                 # LossS_Net_obs = tf.reduce_mean(tf.square(S_NN - S_observe))
                 LossI_Net_obs = tf.reduce_mean(tf.square(I_NN - I_observe))
                 # LossR_Net_obs = tf.reduce_mean(tf.square(R_NN - R_observe))
+                # LossD_Net_obs = tf.reduce_mean(tf.square(D_NN - D_observe))
                 LossN_Net_obs = tf.reduce_mean(tf.square(N_NN - N_observe))
 
                 Loss2dS = tf.reduce_mean(tf.square(dS_NN2t - temp_snn2t))
                 Loss2dI = tf.reduce_mean(tf.square(dI_NN2t - temp_inn2t))
                 Loss2dR = tf.reduce_mean(tf.square(dR_NN2t - temp_rnn2t))
                 Loss2dN = tf.reduce_mean(tf.square(dN_NN2t))
+                Loss2dD = tf.reduce_mean(tf.square(dD_NN2t - temp_dnn2t))
             elif str.lower(R['loss_function']) == 'lncosh_loss':
                 # LossS_Net_obs = tf.reduce_mean(tf.ln(tf.cosh(S_NN - S_observe)))
                 LossI_Net_obs = tf.reduce_mean(tf.log(tf.cosh(I_NN - I_observe)))
                 # LossR_Net_obs = tf.reduce_mean(tf.log(tf.cosh(R_NN - R_observe)))
+                # LossD_Net_obs = tf.reduce_mean(tf.log(tf.cosh(D_NN - D_observe)))
                 LossN_Net_obs = tf.reduce_mean(tf.log(tf.cosh(N_NN - N_observe)))
 
                 Loss2dS = tf.reduce_mean(tf.log(tf.cosh(dS_NN2t - temp_snn2t)))
                 Loss2dI = tf.reduce_mean(tf.log(tf.cosh(dI_NN2t - temp_inn2t)))
                 Loss2dR = tf.reduce_mean(tf.log(tf.cosh(dR_NN2t - temp_rnn2t)))
+                Loss2dD = tf.reduce_mean(tf.log(tf.cosh(dD_NN2t - temp_dnn2t)))
                 Loss2dN = tf.reduce_mean(tf.log(tf.cosh(dN_NN2t)))
 
             if R['regular_weight_model'] == 'L1':
                 regular_WB2S = DNN_base.regular_weights_biases_L1(Weight2S, Bias2S)
                 regular_WB2I = DNN_base.regular_weights_biases_L1(Weight2I, Bias2I)
                 regular_WB2R = DNN_base.regular_weights_biases_L1(Weight2R, Bias2R)
+                regular_WB2D = DNN_base.regular_weights_biases_L1(Weight2D, Bias2D)
             elif R['regular_weight_model'] == 'L2':
                 regular_WB2S = DNN_base.regular_weights_biases_L2(Weight2S, Bias2S)
                 regular_WB2I = DNN_base.regular_weights_biases_L2(Weight2I, Bias2I)
                 regular_WB2R = DNN_base.regular_weights_biases_L2(Weight2R, Bias2R)
+                regular_WB2D = DNN_base.regular_weights_biases_L2(Weight2D, Bias2D)
             else:
                 regular_WB2S = tf.constant(0.0)
                 regular_WB2I = tf.constant(0.0)
                 regular_WB2R = tf.constant(0.0)
+                regular_WB2D = tf.constant(0.0)
 
             PWB2S = wb_penalty*regular_WB2S
             PWB2I = wb_penalty*regular_WB2I
             PWB2R = wb_penalty*regular_WB2R
+            PWB2D = wb_penalty * regular_WB2D
 
             Loss2S = Loss2dS + PWB2S
             Loss2I = predict_true_penalty * LossI_Net_obs + Loss2dI + PWB2I
             Loss2R = Loss2dR + PWB2R
+            Loss2D = Loss2dD + PWB2D
             Loss2All = LossN_Net_obs + Loss2dN
 
             my_optimizer = tf.train.AdamOptimizer(in_learning_rate)
             train_Loss2S = my_optimizer.minimize(Loss2S, global_step=global_steps)
             train_Loss2I = my_optimizer.minimize(Loss2I, global_step=global_steps)
             train_Loss2R = my_optimizer.minimize(Loss2R, global_step=global_steps)
+            train_Loss2D = my_optimizer.minimize(Loss2D, global_step=global_steps)
             train_Loss2All = my_optimizer.minimize(Loss2All, global_step=global_steps)
-            train_Loss = tf.group(train_Loss2S, train_Loss2I, train_Loss2R, train_Loss2All)
+            train_Loss = tf.group(train_Loss2S, train_Loss2I, train_Loss2R, train_Loss2D, train_Loss2All)
 
     t0 = time.time()
     loss_s_all, loss_i_all, loss_r_all, loss_n_all = [], [], [], []
