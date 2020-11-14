@@ -23,6 +23,9 @@ def dictionary_out2file(R_dic, log_fileout):
     DNN_tools.log_string('Network model of solving problem: %s\n' % str(R_dic['model']), log_fileout)
     DNN_tools.log_string('activate function: %s\n' % str(R_dic['act_name']), log_fileout)
     DNN_tools.log_string('hidden layers: %s\n' % str(R_dic['hidden_layers']), log_fileout)
+    DNN_tools.log_string('Init learning rate: %s\n' % str(R_dic['learning_rate']), log_fileout)
+    DNN_tools.log_string('Decay to learning rate: %s\n' % str(R_dic['lr_decay']), log_fileout)
+    DNN_tools.log_string('The type for Loss function: %s\n' % str(R_dic['loss_function']), log_fileout)
     if (R_dic['optimizer_name']).title() == 'Adam':
         DNN_tools.log_string('optimizer:%s\n' % str(R_dic['optimizer_name']), log_fileout)
     else:
@@ -32,10 +35,6 @@ def dictionary_out2file(R_dic, log_fileout):
         DNN_tools.log_string('activate the stop_step and given_step= %s\n' % str(R_dic['max_epoch']), log_fileout)
     else:
         DNN_tools.log_string('no activate the stop_step and given_step = default: %s\n' % str(R_dic['max_epoch']), log_fileout)
-
-    DNN_tools.log_string('Init learning rate: %s\n' % str(R_dic['learning_rate']), log_fileout)
-
-    DNN_tools.log_string('Decay to learning rate: %s\n' % str(R_dic['lr_decay']), log_fileout)
 
     DNN_tools.log_string('Initial penalty for difference of predict and true: %s\n' % str(R_dic['init_penalty2predict_true']), log_fileout)
 
@@ -140,10 +139,26 @@ def solve_SIR2COVID(R):
             temp_inn2t = beta*S_NN*I_NN - gamma * I_NN
             temp_rnn2t = gamma *I_NN
 
-            # LossS_Net_obs = tf.reduce_mean(tf.square(S_NN - S_observe))
-            LossI_Net_obs = tf.reduce_mean(tf.square(I_NN - I_observe))
-            # LossR_Net_obs = tf.reduce_mean(tf.square(R_NN - R_observe))
-            LossN_Net_obs = tf.reduce_mean(tf.square(N_NN - N_observe))
+            if str.lower(R['loss_function']) == 'l2_loss':
+                # LossS_Net_obs = tf.reduce_mean(tf.square(S_NN - S_observe))
+                LossI_Net_obs = tf.reduce_mean(tf.square(I_NN - I_observe))
+                # LossR_Net_obs = tf.reduce_mean(tf.square(R_NN - R_observe))
+                LossN_Net_obs = tf.reduce_mean(tf.square(N_NN - N_observe))
+
+                Loss2dS = tf.reduce_mean(tf.square(dS_NN2t - temp_snn2t))
+                Loss2dI = tf.reduce_mean(tf.square(dI_NN2t - temp_inn2t))
+                Loss2dR = tf.reduce_mean(tf.square(dR_NN2t - temp_rnn2t))
+                Loss2dN = tf.reduce_mean(tf.square(dN_NN2t))
+            elif str.lower(R['loss_function']) == 'lncosh_loss':
+                # LossS_Net_obs = tf.reduce_mean(tf.ln(tf.cosh(S_NN - S_observe)))
+                LossI_Net_obs = tf.reduce_mean(tf.log(tf.cosh(I_NN - I_observe)))
+                # LossR_Net_obs = tf.reduce_mean(tf.log(tf.cosh(R_NN - R_observe)))
+                LossN_Net_obs = tf.reduce_mean(tf.log(tf.cosh(N_NN - N_observe)))
+
+                Loss2dS = tf.reduce_mean(tf.log(tf.cosh(dS_NN2t - temp_snn2t)))
+                Loss2dI = tf.reduce_mean(tf.log(tf.cosh(dI_NN2t - temp_inn2t)))
+                Loss2dR = tf.reduce_mean(tf.log(tf.cosh(dR_NN2t - temp_rnn2t)))
+                Loss2dN = tf.reduce_mean(tf.log(tf.cosh(dN_NN2t)))
 
             if R['regular_weight_model'] == 'L1':
                 regular_WB2S = DNN_base.regular_weights_biases_L1(Weight2S, Bias2S)
@@ -158,17 +173,12 @@ def solve_SIR2COVID(R):
                 regular_WB2I = tf.constant(0.0)
                 regular_WB2R = tf.constant(0.0)
 
-            Loss2dS = tf.reduce_mean(tf.square(dS_NN2t - temp_snn2t))
-            Loss2dI = tf.reduce_mean(tf.square(dI_NN2t - temp_inn2t))
-            Loss2dR = tf.reduce_mean(tf.square(dR_NN2t - temp_rnn2t))
-            Loss2dN = tf.reduce_mean(tf.square(dN_NN2t))
-
             PWB2S = wb_penalty*regular_WB2S
             PWB2I = wb_penalty*regular_WB2I
             PWB2R = wb_penalty*regular_WB2R
 
             Loss2S = Loss2dS + PWB2S
-            Loss2I = predict_true_penalty*LossI_Net_obs + Loss2dI + PWB2I
+            Loss2I = predict_true_penalty * LossI_Net_obs + Loss2dI + PWB2I
             Loss2R = Loss2dR + PWB2R
             Loss2All = LossN_Net_obs + Loss2dN
 
@@ -182,7 +192,8 @@ def solve_SIR2COVID(R):
     t0 = time.time()
     loss_s_all, loss_i_all, loss_r_all, loss_n_all = [], [], [], []
 
-    filename = 'data2csv/Italia_data.csv'
+    # filename = 'data2csv/Italia_data.csv'
+    filename = 'data2csv/Korea_data.csv'
     date, data = DNN_data.load_csvData(filename)
     ndata = np.ones(size2batch, dtype=np.float32)
 
@@ -234,6 +245,17 @@ def solve_SIR2COVID(R):
             if i_epoch % 1000 == 0:
                 print_and_log2train(i_epoch, time.time() - t0, tmp_lr, temp_penalty_pt, pwb2s, pwb2i, pwb2r, loss_s,
                                     loss_i, loss_r, loss_n, log_out=log_fileout)
+
+        saveData.save_SIR_trainLoss2mat_Covid(loss_s_all, loss_i_all, loss_r_all, loss_n_all, actName=act_func,
+                                              outPath=R['FolderName'])
+        plotData.plotTrain_loss_1act_func(loss_s_all, lossType='loss2s', seedNo=R['seed'], outPath=R['FolderName'],
+                                          yaxis_scale=True)
+        plotData.plotTrain_loss_1act_func(loss_i_all, lossType='loss2i', seedNo=R['seed'], outPath=R['FolderName'],
+                                          yaxis_scale=True)
+        plotData.plotTrain_loss_1act_func(loss_r_all, lossType='loss2r', seedNo=R['seed'], outPath=R['FolderName'],
+                                          yaxis_scale=True)
+        plotData.plotTrain_loss_1act_func(loss_n_all, lossType='loss2n', seedNo=R['seed'], outPath=R['FolderName'],
+                                          yaxis_scale=True)
 
 
 if __name__ == "__main__":
@@ -301,6 +323,8 @@ if __name__ == "__main__":
         R['learning_rate'] = 5e-5         # 学习率
         R['lr_decay'] = 1e-5              # 学习率 decay
     R['optimizer_name'] = 'Adam'          # 优化器
+    # R['loss_function'] = 'L2_loss'
+    R['loss_function'] = 'lncosh_loss'
 
     R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
     # R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
