@@ -37,7 +37,7 @@ def dictionary_out2file(R_dic, log_fileout):
 
     DNN_tools.log_string('Decay to learning rate: %s\n' % str(R_dic['lr_decay']), log_fileout)
 
-    DNN_tools.log_string('Initial boundary penalty: %s\n' % str(R_dic['init_bd_penalty']), log_fileout)
+    DNN_tools.log_string('Initial penalty for difference of predict and true: %s\n' % str(R_dic['init_penalty2predict_true']), log_fileout)
 
     DNN_tools.log_string('Batch-size 2 training: %s\n' % str(R_dic['batch_size']), log_fileout)
 
@@ -194,7 +194,7 @@ def solve_SIR2COVID(R):
         sess.run(tf.global_variables_initializer())
         tmp_lr = learning_rate
         for i_epoch in range(R['max_epoch'] + 1):
-            t_batch, i_obs = DNN_data.randSample_Normalize_existData(date, data, batchsize=size2batch, normalFactor=10000)
+            t_batch, i_obs = DNN_data.randSample_Normalize_existData(date, data, batchsize=size2batch, normalFactor=9776000)
             n_obs = ndata.reshape(size2batch, 1)
             tmp_lr = tmp_lr * (1 - lr_decay)
             train_option = True
@@ -280,10 +280,10 @@ if __name__ == "__main__":
     # ------------------------------------  神经网络的设置  ----------------------------------------
     R['batch_size'] = 5                   # 训练数据的批大小
 
-    R['init_bd_penalty'] = 50             # Regularization parameter for boundary conditions
+    R['init_penalty2predict_true'] = 50             # Regularization parameter for boundary conditions
     R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
-        R['init_bd_penalty'] = 1
+        R['init_penalty2predict_true'] = 1
 
     # R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
