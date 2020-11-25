@@ -2,12 +2,6 @@ import scipy.io as scio
 
 
 def save_trainLoss2mat_1actFunc(loss_it, loss_bd, loss, actName=None, outPath=None):
-    # if actName == 's2ReLU':
-    #     outFile2data = '%s/Loss2s2ReLU.mat' % (outPath)
-    # if actName == 'sReLU':
-    #     outFile2data = '%s/Loss2sReLU.mat' % (outPath)
-    # if actName == 'ReLU':
-    #     outFile2data = '%s/Loss2ReLU.mat' % (outPath)
     outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
     key2mat_1 = 'loss_it'
     key2mat_2 = 'loss_bd'
@@ -16,12 +10,6 @@ def save_trainLoss2mat_1actFunc(loss_it, loss_bd, loss, actName=None, outPath=No
 
 
 def save_trainLoss2mat_1act_Func(loss_it, loss_bd, loss_bdd, loss, actName=None, outPath=None):
-    # if actName == 's2ReLU':
-    #     outFile2data = '%s/Loss2s2ReLU.mat' % (outPath)
-    # if actName == 'sReLU':
-    #     outFile2data = '%s/Loss2sReLU.mat' % (outPath)
-    # if actName == 'ReLU':
-    #     outFile2data = '%s/Loss2ReLU.mat' % (outPath)
     outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
     key2mat_1 = 'loss_it'
     key2mat_2 = 'loss_bd'
@@ -30,15 +18,41 @@ def save_trainLoss2mat_1act_Func(loss_it, loss_bd, loss_bdd, loss, actName=None,
     scio.savemat(outFile2data, {key2mat_1: loss_it, key2mat_2: loss_bd, key2mat_3: loss_bdd, key2mat_4: loss})
 
 
-def save_trainLoss2mat_1actFunc_Covid(loss2s_arr, loss2e_arr, loss2i_arr, loss2r_arr, loss2d_arr, loss2n_arr,
-                                      actName=None, outPath=None):
-    # if actName == 's2ReLU':
-    #     outFile2data = '%s/Loss2s2ReLU.mat' % (outPath)
-    # if actName == 'sReLU':
-    #     outFile2data = '%s/Loss2sReLU.mat' % (outPath)
-    # if actName == 'ReLU':
-    #     outFile2data = '%s/Loss2ReLU.mat' % (outPath)
+def save_SIR_trainLoss2mat_Covid(loss_sArray, loss_iArray, loss_rArray, loss_nArray, actName=None, outPath=None):
     outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
+    key2mat_1 = 'loss_s'
+    key2mat_2 = 'loss_i'
+    key2mat_3 = 'loss_r'
+    key2mat_4 = 'loss_n'
+    scio.savemat(outFile2data, {key2mat_1: loss_sArray, key2mat_2: loss_iArray, key2mat_3: loss_rArray,
+                                key2mat_4: loss_nArray})
+
+
+def save_SIRD_trainLoss2mat_Covid(loss_sArray, loss_iArray, loss_rArray, loss_dArray, loss_nArray, actName=None, outPath=None):
+    outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
+    key2mat_1 = 'loss_s'
+    key2mat_2 = 'loss_i'
+    key2mat_3 = 'loss_r'
+    key2mat_4 = 'loss_d'
+    key2mat_5 = 'loss_n'
+    scio.savemat(outFile2data, {key2mat_1: loss_sArray, key2mat_2: loss_iArray, key2mat_3: loss_rArray,
+                                key2mat_4: loss_dArray, key2mat_5: loss_nArray})
+
+
+def save_SEIR_trainLoss2mat_Covid(loss_sArray, loss_eArray, loss_iArray, loss_rArray, loss_nArray, actName=None, outPath=None):
+    outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
+    key2mat_1 = 'loss_s'
+    key2mat_2 = 'loss_e'
+    key2mat_3 = 'loss_i'
+    key2mat_4 = 'loss_r'
+    key2mat_5 = 'loss_n'
+    scio.savemat(outFile2data, {key2mat_1: loss_sArray, key2mat_2: loss_eArray, key2mat_3: loss_iArray,
+                                key2mat_4: loss_rArray, key2mat_5: loss_nArray})
+
+
+def save_SEIRD_trainLoss2mat_Covid(loss2s_arr, loss2e_arr, loss2i_arr, loss2r_arr, loss2d_arr, loss2n_arr,
+                                   actName=None, outPath=None):
+    outFile2data = '%s/LossSEIRD2%s.mat' % (outPath, actName)
     key2mat_1 = 'loss_s'
     key2mat_2 = 'loss_e'
     key2mat_3 = 'loss_i'
