@@ -423,7 +423,7 @@ if __name__ == "__main__":
         epoch_stop = input('please input a stop epoch:')
         R['max_epoch'] = int(epoch_stop)
 
-    R['eqs_name'] = 'SEIR'
+    R['eqs_name'] = 'SEIRD'
     R['input_dim'] = 1                    # 输入维数，即问题的维数(几元问题)
     R['output_dim'] = 1                   # 输出维数
 
