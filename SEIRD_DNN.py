@@ -257,7 +257,11 @@ def solve_SEIRD2COVID(R):
             train_Loss2N = my_optimizer.minimize(Loss2N, global_step=global_steps)
             train_Loss = tf.group(train_Loss2S, train_Loss2E, train_Loss2I, train_Loss2R, train_Loss2D, train_Loss2N)
 
-
+    t0 = time.time()
+    loss_s_all, loss_e_all, loss_i_all, loss_r_all, loss_d_all, loss_n_all = [], [], [], [], [], []
+    test_epoch = []
+    test_mse2s_all, test_mse2e_all, test_mse2i_all, test_mse2r_all, test_mse2d_all = [], [], [], [], []
+    test_rel2s_all, test_rel2e_all, test_rel2i_all, test_rel2r_all, test_rel2d_all = [], [], [], [], []
 
     # ConfigProto 加上allow_soft_placement=True就可以使用 gpu 了
     config = tf.ConfigProto(allow_soft_placement=True)  # 创建sess的时候对sess进行参数配置
@@ -300,12 +304,12 @@ def solve_SEIRD2COVID(R):
                 feed_dict={T_it:t_it_batch, XY_it: xy_it_batch, in_learning_rate: tmp_lr, train_opt: train_option,
                            bd_penalty: temp_penalty_bd})
 
-            loss2s_all.append(loss2s_tmp)
-            loss2e_all.append(loss2e_tmp)
-            loss2i_all.append(loss2i_tmp)
-            loss2r_all.append(loss2r_tmp)
-            loss2d_all.append(loss2d_tmp)
-            loss2n_all.append(loss2n_tmp)
+            loss_s_all.append(loss2s_tmp)
+            loss_e_all.append(loss2e_tmp)
+            loss_i_all.append(loss2i_tmp)
+            loss_r_all.append(loss2r_tmp)
+            loss_d_all.append(loss2d_tmp)
+            loss_n_all.append(loss2n_tmp)
 
             if i_epoch % 1000 == 0:
                 print_and_log2train(i_epoch, time.time() - t0, tmp_lr, temp_penalty_bd, loss2s_tmp, loss2e_tmp,
@@ -354,19 +358,19 @@ def solve_SEIRD2COVID(R):
 
         # -----------------------  save training result to mat file, then plot them ---------------------------------
         saveData.save_trainLoss2mat_1actFunc_Covid(
-            loss2s_all, loss2e_all, loss2i_all, loss2r_all, loss2d_all, loss2n_all, actName=act_func, outPath=R['FolderName'])
+            loss_s_all, loss_e_all, loss_i_all, loss_r_all, loss_d_all, loss_n_all, actName=act_func, outPath=R['FolderName'])
 
-        plotData.plotTrain_loss_1act_func(loss2s_all, lossType='loss_s', seedNo=R['seed'], outPath=R['FolderName'],
+        plotData.plotTrain_loss_1act_func(loss_s_all, lossType='loss_s', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
-        plotData.plotTrain_loss_1act_func(loss2e_all, lossType='loss_e', seedNo=R['seed'], outPath=R['FolderName'],
+        plotData.plotTrain_loss_1act_func(loss_e_all, lossType='loss_e', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
-        plotData.plotTrain_loss_1act_func(loss2i_all, lossType='loss_i', seedNo=R['seed'], outPath=R['FolderName'],
+        plotData.plotTrain_loss_1act_func(loss_i_all, lossType='loss_i', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
-        plotData.plotTrain_loss_1act_func(loss2r_all, lossType='loss_r', seedNo=R['seed'], outPath=R['FolderName'],
+        plotData.plotTrain_loss_1act_func(loss_r_all, lossType='loss_r', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
-        plotData.plotTrain_loss_1act_func(loss2d_all, lossType='loss_d', seedNo=R['seed'], outPath=R['FolderName'],
+        plotData.plotTrain_loss_1act_func(loss_d_all, lossType='loss_d', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
-        plotData.plotTrain_loss_1act_func(loss2n_all, lossType='loss_n', seedNo=R['seed'], outPath=R['FolderName'],
+        plotData.plotTrain_loss_1act_func(loss_n_all, lossType='loss_n', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
 
         # ------------------------------ save testing result to mat file, then plot them -------------------------------
