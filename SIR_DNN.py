@@ -52,7 +52,7 @@ def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_nt, penalty_wb2s
     print('loss for S: %.10f' % loss_s)
     print('loss for I: %.10f' % loss_i)
     print('loss for R: %.10f' % loss_r)
-    print('total loss: %.10f' % loss_n)
+    print('total loss: %.10f\n' % loss_n)
 
     DNN_tools.log_string('train epoch: %d,time: %.3f' % (i_epoch, run_time), log_out)
     DNN_tools.log_string('learning rate: %f' % tmp_lr, log_out)
@@ -63,7 +63,7 @@ def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_nt, penalty_wb2s
     DNN_tools.log_string('loss for S: %.10f' % loss_s, log_out)
     DNN_tools.log_string('loss for I: %.10f' % loss_i, log_out)
     DNN_tools.log_string('loss for R: %.10f' % loss_r, log_out)
-    DNN_tools.log_string('total loss: %.10f' % loss_n, log_out)
+    DNN_tools.log_string('total loss: %.10f \n\n' % loss_n, log_out)
 
 
 def solve_SIR2COVID(R):
@@ -309,7 +309,7 @@ if __name__ == "__main__":
 
     # R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
-    R['regular_weight_model'] = 'L2'
+    R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
     # R['regular_weight'] = 0.000         # Regularization parameter for weights
     R['regular_weight'] = 0.001           # Regularization parameter for weights
 
