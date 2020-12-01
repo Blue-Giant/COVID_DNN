@@ -191,11 +191,19 @@ def solve_SIR2COVID(R):
 
     t0 = time.time()
     loss_s_all, loss_i_all, loss_r_all, loss_n_all = [], [], [], []
+    train_beta_all, train_gamma_all = [], []
+    test_epoch = []
+    test_mse_I_all, test_rel_I_all = [], []
+    test_beta_all, test_gamma_all = [], []
 
     # filename = 'data2csv/Italia_data.csv'
     filename = 'data2csv/Korea_data.csv'
     date, data = DNN_data.load_csvData(filename)
     ndata = np.ones(size2batch, dtype=np.float32)
+
+    test_bach_size = 3
+    base_day = date[-1]
+    test_t_bach = DNN_data.rand_days(base_day, test_bach_size)
 
     # ConfigProto 加上allow_soft_placement=True就可以使用 gpu 了
     config = tf.ConfigProto(allow_soft_placement=True)  # 创建sess的时候对sess进行参数配置
@@ -234,20 +242,41 @@ def solve_SIR2COVID(R):
 
             _, loss_s, loss_i, loss_r, loss_n, pwb2s, pwb2i, pwb2r = sess.run(
                 [train_Loss, Loss2S, Loss2I, Loss2R, Loss2All, PWB2S, PWB2I, PWB2R],
-                feed_dict={T_it: t_batch, I_observe: i_obs,
-                           N_observe: n_obs, in_learning_rate: tmp_lr, train_opt: train_option,
-                           predict_true_penalty: temp_penalty_pt})
+                feed_dict={T_it: t_batch, I_observe: i_obs, N_observe: n_obs, in_learning_rate: tmp_lr,
+                           train_opt: train_option, predict_true_penalty: temp_penalty_pt})
+
             loss_s_all.append(loss_s)
             loss_i_all.append(loss_i)
             loss_r_all.append(loss_r)
             loss_n_all.append(loss_n)
 
+            train_beta, train_gamma = sess.run(
+                [beta, gamma], feed_dict={T_it: t_batch, I_observe: i_obs, N_observe: n_obs, in_learning_rate: tmp_lr,
+                                          train_opt: train_option, predict_true_penalty: temp_penalty_pt})
+
+            train_beta_all.append(train_beta)
+            train_gamma_all.append(train_gamma)
+
             if i_epoch % 1000 == 0:
                 print_and_log2train(i_epoch, time.time() - t0, tmp_lr, temp_penalty_pt, pwb2s, pwb2i, pwb2r, loss_s,
                                     loss_i, loss_r, loss_n, log_out=log_fileout)
+                test_epoch.append(i_epoch / 1000)
+                train_option = False
+                i_test, i_obs_test, beta_test, gamma_test = sess.run(
+                    [I_NN, I_observe, beta, gamma], feed_dict={T_it: test_t_bach, train_opt: train_option})
+                test_ERR2I = np.square(i_test - i_obs_test)
+                test_mse2I = np.mean(test_ERR2I)
+                test_mse_I_all.append(test_mse2I)
+                test_rel2I = test_mse2I / np.mean(np.square(i_obs_test))
+                test_rel_I_all.append(test_rel2I)
+                test_beta_all.append(beta_test)
+                test_gamma_all.append(gamma_test)
 
         saveData.save_SIR_trainLoss2mat_Covid(loss_s_all, loss_i_all, loss_r_all, loss_n_all, actName=act_func,
                                               outPath=R['FolderName'])
+        saveData.save_parameter2mat_Covid(train_beta_all, name2para='beta', outPath=R['FolderName'])
+        saveData.save_parameter2mat_Covid(train_gamma_all, name2para='gamma', outPath=R['FolderName'])
+
         plotData.plotTrain_loss_1act_func(loss_s_all, lossType='loss2s', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
         plotData.plotTrain_loss_1act_func(loss_i_all, lossType='loss2i', seedNo=R['seed'], outPath=R['FolderName'],

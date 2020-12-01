@@ -1,23 +1,6 @@
 import scipy.io as scio
 
 
-def save_trainLoss2mat_1actFunc(loss_it, loss_bd, loss, actName=None, outPath=None):
-    outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
-    key2mat_1 = 'loss_it'
-    key2mat_2 = 'loss_bd'
-    key2mat_3 = 'loss'
-    scio.savemat(outFile2data, {key2mat_1: loss_it, key2mat_2: loss_bd, key2mat_3: loss})
-
-
-def save_trainLoss2mat_1act_Func(loss_it, loss_bd, loss_bdd, loss, actName=None, outPath=None):
-    outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
-    key2mat_1 = 'loss_it'
-    key2mat_2 = 'loss_bd'
-    key2mat_3 = 'loss_bdd'
-    key2mat_4 = 'loss'
-    scio.savemat(outFile2data, {key2mat_1: loss_it, key2mat_2: loss_bd, key2mat_3: loss_bdd, key2mat_4: loss})
-
-
 def save_SIR_trainLoss2mat_Covid(loss_sArray, loss_iArray, loss_rArray, loss_nArray, actName=None, outPath=None):
     outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
     key2mat_1 = 'loss_s'
@@ -61,6 +44,30 @@ def save_SEIRD_trainLoss2mat_Covid(loss2s_arr, loss2e_arr, loss2i_arr, loss2r_ar
     key2mat_6 = 'loss_n'
     scio.savemat(outFile2data, {key2mat_1: loss2s_arr, key2mat_2: loss2e_arr, key2mat_3: loss2i_arr,
                                 key2mat_4: loss2r_arr, key2mat_5: loss2d_arr, key2mat_6: loss2n_arr})
+
+
+def save_parameter2mat_Covid(para_array,name2para=None, outPath=None):
+    outFile2data = '%s/%s.mat' % (outPath, name2para)
+    key2mat_1 = str(name2para)
+    scio.savemat(outFile2data, {key2mat_1: para_array})
+
+
+#######################################################################################################################
+def save_trainLoss2mat_1actFunc(loss_it, loss_bd, loss, actName=None, outPath=None):
+    outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
+    key2mat_1 = 'loss_it'
+    key2mat_2 = 'loss_bd'
+    key2mat_3 = 'loss'
+    scio.savemat(outFile2data, {key2mat_1: loss_it, key2mat_2: loss_bd, key2mat_3: loss})
+
+
+def save_trainLoss2mat_1act_Func(loss_it, loss_bd, loss_bdd, loss, actName=None, outPath=None):
+    outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
+    key2mat_1 = 'loss_it'
+    key2mat_2 = 'loss_bd'
+    key2mat_3 = 'loss_bdd'
+    key2mat_4 = 'loss'
+    scio.savemat(outFile2data, {key2mat_1: loss_it, key2mat_2: loss_bd, key2mat_3: loss_bdd, key2mat_4: loss})
 
 
 def save_trainLoss2mat_1actFunc_Dirichlet(loss_it, loss_bd, loss_bd2, loss_all, actName=None, outPath=None):
