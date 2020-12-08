@@ -48,6 +48,13 @@ def randSample_Normalize_existData(data1, data2, batchsize=1, normalFactor=1000)
     return data1_samples, data2_samples
 
 
+# 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
+def sample_days_serially(day_base, batch_size):
+    day_it = np.arange(day_base+1, day_base+batch_size+1, dtype='i')
+    day_it = day_it.astype(np.float32)
+    return day_it
+
+
 # ---------------------------------------------- 数据集的生成 ---------------------------------------------------
 #  方形区域[a,b]^n生成随机数, n代表变量个数
 def rand_it(batch_size, variable_dim, region_a, region_b):

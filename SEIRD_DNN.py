@@ -316,20 +316,27 @@ def solve_SEIRD2COVID(R):
 
     t0 = time.time()
     loss_s_all, loss_e_all, loss_i_all, loss_r_all, loss_d_all, loss_n_all = [], [], [], [], [], []
-    train_betai_all, train_betae_all = [], []
-    train_nvs_all, train_nve_all, train_nvi_all, train_nvr_all = [], [], [], []
+    # train_betai_all, train_betae_all = [], []
+    # train_nvs_all, train_nve_all, train_nvi_all, train_nvr_all = [], [], [], []
+
     test_epoch = []
-    test_snn_all, test_enn_all, test_inn_all, test_rnn_all, test_dnn_all = [], [], [], [], []
-    test_betae_all, test_betai_all, test_nvs_all, test_nve_all, test_nvi_all, test_nvr_all = [], [], [], [], [], []
+    # test_snn_all, test_enn_all, test_inn_all, test_rnn_all, test_dnn_all = [], [], [], [], []
+    # test_betae_all, test_betai_all, test_nvs_all, test_nve_all, test_nvi_all, test_nvr_all = [], [], [], [], [], []
+    test_mse2I_all, test_rel2I_all = [], []
+    test_mse2D_all, test_rel2D_all = [], []
 
     # filename = 'data2csv/Italia_data.csv'
     filename = 'data2csv/Korea_data.csv'
     date, data = DNN_data.load_csvData(filename)
     ndata = np.ones(size2batch, dtype=np.float32)
 
+    # 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
     test_bach_size = 3
-    base_day = date[-1]
-    test_t_bach = DNN_data.rand_days(base_day, test_bach_size)
+    day_begin = date[-1]
+    data_begin = data[-1]
+    test_t_bach = DNN_data.sample_days_serially(day_begin, test_bach_size)
+    i_obs_test = DNN_data.sample_days_serially(data_begin, test_bach_size)
+    d_obs_test = DNN_data.sample_days_serially(data_begin, test_bach_size)
 
     test_xy_bach = DNN_data.rand_it(test_bach_size, input_dim, region_lb, region_rt)
     # test_x_bach = np.reshape(test_xy_bach[:, 0], newshape=[-1, 1])
@@ -375,7 +382,7 @@ def solve_SEIRD2COVID(R):
 
             _, loss2s_tmp, loss2e_tmp, loss2i_tmp, loss2r_tmp, loss2d_tmp, loss2n_tmp, pwb2s, pwb2e, pwb2i, pwb2r, pwb2d\
                 = sess.run([train_Loss, Loss2S, Loss2E, Loss2I, Loss2R, Loss2D, Loss2N, PWB2S, PWB2E, PWB2I, PWB2R, PWB2D],
-                           feed_dict={T_it: t_batch, XY_it: xy_it_batch, I_observe: i_obs, D_observe: d_obs,
+                           feed_dict={T_it: t_batch, XY_it: xy_it_batch, I_observe: i_obs, D_observe: d_obs, N_observe: n_obs,
                            in_learning_rate: tmp_lr, train_opt: train_option,
                            predict_true_penalty: temp_penalty_pt})
 
@@ -386,17 +393,17 @@ def solve_SEIRD2COVID(R):
             loss_d_all.append(loss2d_tmp)
             loss_n_all.append(loss2n_tmp)
 
-            train_betai, train_betae, train_nvs, train_nve, train_nvi, train_nvr = sess.run(
-                [beta_i, beta_e, nv_s, nv_e, nv_i, nv_r], feed_dict={T_it: t_batch, I_observe: i_obs, N_observe: n_obs,
-                                                                     in_learning_rate: tmp_lr, train_opt: train_option,
-                                                                     predict_true_penalty: temp_penalty_pt})
-
-            train_betai_all.append(train_betai)
-            train_betae_all.append(train_betae)
-            train_nvs_all.append(train_nvs)
-            train_nve_all.append(train_nve)
-            train_nvi_all.append(train_nvi)
-            train_nvr_all.append(train_nvr)
+            # 训练的时候数据是散乱的，输出的结果不是按照时间连续的，所以不能plot出来
+            # train_betai, train_betae, train_nvs, train_nve, train_nvi, train_nvr = sess.run(
+            #     [beta_i, beta_e, nv_s, nv_e, nv_i, nv_r], feed_dict={T_it: t_batch, I_observe: i_obs, N_observe: n_obs,
+            #                                                          in_learning_rate: tmp_lr, train_opt: train_option,
+            #                                                          predict_true_penalty: temp_penalty_pt})
+            # train_betai_all.append(train_betai)
+            # train_betae_all.append(train_betae)
+            # train_nvs_all.append(train_nvs)
+            # train_nve_all.append(train_nve)
+            # train_nvi_all.append(train_nvi)
+            # train_nvr_all.append(train_nvr)
 
             if i_epoch % 1000 == 0:
                 print_and_log2train(i_epoch, time.time() - t0, tmp_lr, temp_penalty_pt, pwb2s, pwb2e, pwb2i, pwb2r, pwb2d,
@@ -408,39 +415,45 @@ def solve_SEIRD2COVID(R):
                 s_nn2test, e_nn2test, i_nn2test, r_nn2test, d_nn2test = sess.run(
                     [S_NN, E_NN, I_NN, R_NN, D_NN], feed_dict={
                         T_it: test_t_bach, XY_it: test_xy_bach, train_opt: train_option})
+                # test_snn_all.append(s_nn2test)
+                # test_enn_all.append(e_nn2test)
+                # test_inn_all.append(i_nn2test)
+                # test_rnn_all.append(r_nn2test)
+                # test_dnn_all.append(d_nn2test)
+
+                test_ERR2I = np.square(i_nn2test - i_obs_test)
+                test_mse2I = np.mean(test_ERR2I)
+                test_mse2I_all.append(test_mse2I)
+                test_rel2I = test_mse2I / np.mean(np.square(i_obs_test))
+                test_rel2I_all.append(test_rel2I)
+
+                test_ERR2D = np.square(d_nn2test - d_obs_test)
+                test_mse2D = np.mean(test_ERR2D)
+                test_mse2D_all.append(test_mse2D)
+                test_rel2D = test_mse2D / np.mean(np.square(d_obs_test))
+                test_rel2D_all.append(test_rel2D)
+
                 betae2test, betai2test, nvs2test, nve2test, nvi2test, nvr2test = sess.run(
                     [beta_e, beta_i, nv_s, nv_e, nv_i, nv_r], feed_dict={
                         T_it: test_t_bach, XY_it: test_xy_bach, train_opt: train_option})
 
-                test_snn_all.append(s_nn2test)
-                test_enn_all.append(e_nn2test)
-                test_inn_all.append(i_nn2test)
-                test_rnn_all.append(r_nn2test)
-                test_dnn_all.append(d_nn2test)
-
-                test_betae_all.append(betae2test)
-                test_betai_all.append(betai2test)
-                test_nvs_all.append(nvs2test)
-                test_nve_all.append(nve2test)
-                test_nvi_all.append(nvi2test)
-                test_nvr_all.append(nvr2test)
-
-
-                # print('mean square error of predict and real for testing: %10f' % mse2test)
-                # print('residual error of predict and real for testing: %10f\n' % res2test)
-                # DNN_tools.log_string('mean square error of predict and real for testing: %10f' % mse2test, log_fileout)
-                # DNN_tools.log_string('residual error of predict and real for testing: %10f\n\n' % res2test, log_fileout)
+                # test_betae_all.append(betae2test)
+                # test_betai_all.append(betai2test)
+                # test_nvs_all.append(nvs2test)
+                # test_nve_all.append(nve2test)
+                # test_nvi_all.append(nvi2test)
+                # test_nvr_all.append(nvr2test)
 
         # -----------------------  save training result to mat file, then plot them ---------------------------------
         saveData.save_SEIRD_trainLoss2mat_Covid(
             loss_s_all, loss_e_all, loss_i_all, loss_r_all, loss_d_all, loss_n_all, actName=act_func, outPath=R['FolderName'])
 
-        saveData.save_parameter2mat_Covid(train_betai_all, name2para='beta_i', outPath=R['FolderName'])
-        saveData.save_parameter2mat_Covid(train_betae_all, name2para='beta_e', outPath=R['FolderName'])
-        saveData.save_parameter2mat_Covid(train_nvs_all, name2para='nv_s', outPath=R['FolderName'])
-        saveData.save_parameter2mat_Covid(train_nve_all, name2para='nv_e', outPath=R['FolderName'])
-        saveData.save_parameter2mat_Covid(train_nvi_all, name2para='nv_i', outPath=R['FolderName'])
-        saveData.save_parameter2mat_Covid(train_nvr_all, name2para='nv_r', outPath=R['FolderName'])
+        # saveData.save_parameter2mat_Covid(train_betai_all, name2para='beta_i', outPath=R['FolderName'])
+        # saveData.save_parameter2mat_Covid(train_betae_all, name2para='beta_e', outPath=R['FolderName'])
+        # saveData.save_parameter2mat_Covid(train_nvs_all, name2para='nv_s', outPath=R['FolderName'])
+        # saveData.save_parameter2mat_Covid(train_nve_all, name2para='nv_e', outPath=R['FolderName'])
+        # saveData.save_parameter2mat_Covid(train_nvi_all, name2para='nv_i', outPath=R['FolderName'])
+        # saveData.save_parameter2mat_Covid(train_nvr_all, name2para='nv_r', outPath=R['FolderName'])
 
         plotData.plotTrain_loss_1act_func(loss_s_all, lossType='loss_s', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
@@ -454,6 +467,30 @@ def solve_SEIRD2COVID(R):
                                           yaxis_scale=True)
         plotData.plotTrain_loss_1act_func(loss_n_all, lossType='loss_n', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
+
+        # save the testing results into *.mat, then plot them
+        # 这里不能是每次testing结果的列表，应该是单个的testing结果,每单个testing结果最下是一个数，或者是一个数组
+        # saveData.save_testSolus2mat_Covid(test_snn_all, name2solus='snn2test', outPath=R['FolderName'])
+        # saveData.save_testSolus2mat_Covid(test_enn_all, name2solus='enn2test', outPath=R['FolderName'])
+        # saveData.save_testSolus2mat_Covid(test_inn_all, name2solus='inn2test', outPath=R['FolderName'])
+        # saveData.save_testSolus2mat_Covid(test_rnn_all, name2solus='rnn2test', outPath=R['FolderName'])
+        # saveData.save_testSolus2mat_Covid(test_dnn_all, name2solus='dnn2test', outPath=R['FolderName'])
+
+        saveData.save_testMSE_REL2mat(test_mse2I_all, test_rel2I_all, actName='Infected', outPath=R['FolderName'])
+        saveData.save_testMSE_REL2mat(test_mse2D_all, test_rel2D_all, actName='Decreased', outPath=R['FolderName'])
+        plotData.plotTest_MSE_REL(test_mse2I_all, test_rel2I, test_epoch, actName='Infected', seedNo=R['seed'],
+                                  outPath=R['FolderName'], yaxis_scale=True)
+        plotData.plotTest_MSE_REL(test_mse2D_all, test_rel2D, test_epoch, actName='Decreased', seedNo=R['seed'],
+                                  outPath=R['FolderName'], yaxis_scale=True)
+
+        saveData.save_SEIRD_testSolus2mat_Covid(s_nn2test, e_nn2test, i_nn2test, r_nn2test, d_nn2test,
+                                                name2solus1='snn2test', name2solus2='enn2test', name2solus3='inn2test',
+                                                name2solus4='rnn2test', name2solus5='dnn2test', outPath=R['FolderName'])
+
+        saveData.save_SEIRD_testParas2mat_Covid(betae2test, betai2test, nvs2test, nve2test, nvi2test, nvr2test,
+                                                name2para1='beta_e', name2para2='beta_i', name2para3='nv_s',
+                                                name2para4='nv_e', name2para5='nv_i', name2para6='nv_r',
+                                                outPath=R['FolderName'])
 
 
 if __name__ == "__main__":
