@@ -200,7 +200,7 @@ def solve_SIR2COVID(R):
     ndata = np.ones(size2batch, dtype=np.float32)
 
     # 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
-    test_bach_size = 3
+    test_bach_size = 5
     day_begin = date[-1]
     data_begin = data[-1]
     test_t_bach = DNN_data.sample_days_serially(day_begin, test_bach_size)
@@ -276,13 +276,13 @@ def solve_SIR2COVID(R):
         plotData.plotTrain_loss_1act_func(loss_n_all, lossType='loss2n', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
 
-        saveData.save_testMSE_REL2mat(test_mse2I_all, test_rel2I, actName='Infected', outPath=R['FolderName'])
-        plotData.plotTest_MSE_REL(test_mse2I_all, test_rel2I, test_epoch, actName='Infected', seedNo=R['seed'],
+        saveData.save_testMSE_REL2mat(test_mse2I_all, test_rel2I_all, actName='Infected', outPath=R['FolderName'])
+        plotData.plotTest_MSE_REL(test_mse2I_all, test_rel2I_all, test_epoch, actName='Infected', seedNo=R['seed'],
                                   outPath=R['FolderName'], yaxis_scale=True)
         saveData.save_SIR_testSolus2mat_Covid(s_nn2test, i_nn2test, r_nn2test, name2solus1='snn2test',
                                               name2solus2='enn2test', name2solus3='inn2test', outPath=R['FolderName'])
-        saveData.save_SEIRD_testParas2mat_Covid(beta_test, gamma_test, name2para1='beta2test', name2para2='gamma2test',
-                                                outPath=R['FolderName'])
+        saveData.save_SIR_testParas2mat_Covid(beta_test, gamma_test, name2para1='beta2test', name2para2='gamma2test',
+                                              outPath=R['FolderName'])
 
 
 if __name__ == "__main__":

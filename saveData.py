@@ -74,6 +74,26 @@ def save_SIR_testParas2mat_Covid(para1_array, para2_array, name2para1=None, name
     scio.savemat(outFile2data, {key2mat_1: para1_array, key2mat_2: para2_array})
 
 
+def save_SEIR_testSolus2mat_Covid(solu1_array, solu2_array, solu3_array, solu4_array, name2solus1=None,
+                                  name2solus2=None, name2solus3=None, name2solus4=None, outPath=None):
+    outFile2data = '%s/%s.mat' % (outPath, 'solus2test')
+    key2mat_1 = str(name2solus1)
+    key2mat_2 = str(name2solus2)
+    key2mat_3 = str(name2solus3)
+    key2mat_4 = str(name2solus4)
+    scio.savemat(outFile2data, {key2mat_1: solu1_array, key2mat_2: solu2_array, key2mat_3: solu3_array,
+                                key2mat_4: solu4_array})
+
+
+def save_SEIR_testParas2mat_Covid(para1_array, para2_array, para3_array, name2para1=None, name2para2=None,
+                                  name2para3=None, outPath=None):
+    outFile2data = '%s/%s.mat' % (outPath, 'paras2test')
+    key2mat_1 = str(name2para1)
+    key2mat_2 = str(name2para2)
+    key2mat_3 = str(name2para3)
+    scio.savemat(outFile2data, {key2mat_1: para1_array, key2mat_2: para2_array, key2mat_3: para3_array})
+
+
 def save_SEIRD_testSolus2mat_Covid(solu1_array, solu2_array, solu3_array, solu4_array, solu5_array, name2solus1=None,
                                  name2solus2=None, name2solus3=None, name2solus4=None, name2solus5=None, outPath=None):
     outFile2data = '%s/%s.mat' % (outPath, 'solus2test')

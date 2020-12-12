@@ -52,6 +52,7 @@ def randSample_Normalize_existData(data1, data2, batchsize=1, normalFactor=1000)
 def sample_days_serially(day_base, batch_size):
     day_it = np.arange(day_base+1, day_base+batch_size+1, dtype='i')
     day_it = day_it.astype(np.float32)
+    day_it = np.reshape(day_it, newshape=(batch_size, 1))
     return day_it
 
 
