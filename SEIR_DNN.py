@@ -55,10 +55,10 @@ def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_nt, penalty_wb2s
     print('penalty weights and biases for I: %f' % penalty_wb2i)
     print('penalty weights and biases for R: %f' % penalty_wb2r)
     print('loss for S: %.10f' % loss_s)
-    print('loss for S: %.10f' % loss_e)
+    print('loss for E: %.10f' % loss_e)
     print('loss for I: %.10f' % loss_i)
     print('loss for R: %.10f' % loss_r)
-    print('total loss: %.10f' % loss_n)
+    print('total loss: %.10f\n' % loss_n)
 
     DNN_tools.log_string('train epoch: %d,time: %.3f' % (i_epoch, run_time), log_out)
     DNN_tools.log_string('learning rate: %f' % tmp_lr, log_out)
@@ -68,7 +68,7 @@ def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_nt, penalty_wb2s
     DNN_tools.log_string('penalty weights and biases for I: %f' % penalty_wb2i, log_out)
     DNN_tools.log_string('penalty weights and biases for R: %f' % penalty_wb2r, log_out)
     DNN_tools.log_string('loss for S: %.10f' % loss_s, log_out)
-    DNN_tools.log_string('loss for S: %.10f' % loss_e, log_out)
+    DNN_tools.log_string('loss for E: %.10f' % loss_e, log_out)
     DNN_tools.log_string('loss for I: %.10f' % loss_i, log_out)
     DNN_tools.log_string('loss for R: %.10f' % loss_r, log_out)
     DNN_tools.log_string('total loss: %.10f' % loss_n, log_out)
@@ -91,14 +91,10 @@ def solve_SEIR2COVID(R):
     input_dim = R['input_dim']
     out_dim = R['output_dim']
 
-    # 问题区域，每个方向设置为一样的长度
-    region_lb = 0.0
-    region_rt = 1.0
-
     flag2S = 'WB2S'
-    flag2E = 'WB2S'
-    flag2I = 'WB2S'
-    flag2R = 'WB2S'
+    flag2E = 'WB2E'
+    flag2I = 'WB2I'
+    flag2R = 'WB2R'
     hidden_layers = R['hidden_layers']
     Weight2S, Bias2S = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2S)
     Weight2E, Bias2E = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2E)
@@ -137,7 +133,7 @@ def solve_SEIR2COVID(R):
                 E_NN = DNN_base.PDE_DNN_BN(T_it, Weight2E, Bias2E, hidden_layers, activate_name=act_func, is_training=train_opt)
                 I_NN = DNN_base.PDE_DNN_BN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func, is_training=train_opt)
                 R_NN = DNN_base.PDE_DNN_BN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func, is_training=train_opt)
-                in_beta = DNN_base.PDE_DNN_BN(T_it, Weight2alpha, Bias2alpha, hidden_layers, activate_name=act_func, is_training=train_opt)
+                in_alpha = DNN_base.PDE_DNN_BN(T_it, Weight2alpha, Bias2alpha, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_beta = DNN_base.PDE_DNN_BN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_gamma = DNN_base.PDE_DNN_BN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func, is_training=train_opt)
             elif 'PDE_DNN_SCALE' == str.upper(R['model']):
@@ -150,12 +146,12 @@ def solve_SEIR2COVID(R):
                 in_beta = DNN_base.PDE_DNN_scale(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN_scale(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
 
-            # alpha = tf.exp(in_alpha)
-            # beta = tf.exp(in_beta)
-            # gamma = tf.exp(in_gamma)
-            alpha = tf.reduce_mean(tf.exp(in_alpha), axis=0)
-            beta = tf.reduce_mean(tf.exp(in_beta), axis=0)
-            gamma = tf.reduce_mean(tf.exp(in_gamma), axis=0)
+            alpha = tf.exp(in_alpha)
+            beta = tf.exp(in_beta)
+            gamma = tf.exp(in_gamma)
+            # alpha = tf.reduce_mean(tf.exp(in_alpha), axis=0)
+            # beta = tf.reduce_mean(tf.exp(in_beta), axis=0)
+            # gamma = tf.reduce_mean(tf.exp(in_gamma), axis=0)
             N_NN = S_NN + E_NN + I_NN + R_NN
 
             dS_NN2t = tf.gradients(S_NN, T_it)[0]
@@ -168,10 +164,6 @@ def solve_SEIR2COVID(R):
             temp_enn2t = beta*tf.multiply(S_NN, I_NN) - alpha * E_NN
             temp_inn2t = alpha*E_NN - gamma * I_NN
             temp_rnn2t = gamma*I_NN
-
-            loss_temp = tf.square(dS_NN2t-temp_snn2t) + tf.square(dE_NN2t-temp_enn2t) + tf.square(dI_NN2t-temp_inn2t) + \
-                        tf.square(dR_NN2t-temp_rnn2t)
-            loss_dt2NNs = tf.reduce_mean(loss_temp)
 
             if str.lower(R['loss_function']) == 'l2_loss':
                 # LossS_Net_obs = tf.reduce_mean(tf.square(S_NN - S_observe))
@@ -336,11 +328,11 @@ def solve_SEIR2COVID(R):
 
 
 if __name__ == "__main__":
-    R={}
+    R = {}
     R['gpuNo'] = 0  # 默认使用 GPU，这个标记就不要设为-1，设为0,1,2,3,4....n（n指GPU的数目，即电脑有多少块GPU）
 
     # 文件保存路径设置
-    store_file = 'SEIR2covid'
+    store_file = 'SIR2covid'
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(BASE_DIR)
     OUT_DIR = os.path.join(BASE_DIR, store_file)
@@ -372,21 +364,21 @@ if __name__ == "__main__":
         epoch_stop = input('please input a stop epoch:')
         R['max_epoch'] = int(epoch_stop)
 
-    R['eqs_name'] = 'SEIR'
-    R['input_dim'] = 1                    # 输入维数，即问题的维数(几元问题)
-    R['output_dim'] = 1                   # 输出维数
+    R['eqs_name'] = 'SIR'
+    R['input_dim'] = 1                      # 输入维数，即问题的维数(几元问题)
+    R['output_dim'] = 1                     # 输出维数
 
     # ------------------------------------  神经网络的设置  ----------------------------------------
-    R['batch_size'] = 5                   # 训练数据的批大小
+    R['batch_size'] = 5                     # 训练数据的批大小
 
-    R['init_bd_penalty'] = 50             # Regularization parameter for boundary conditions
-    R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
+    R['init_penalty2predict_true'] = 50     # Regularization parameter for boundary conditions
+    R['activate_stage_penalty'] = 1         # 是否开启阶段调整边界惩罚项
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
-        R['init_bd_penalty'] = 1
+        R['init_penalty2predict_true'] = 1
 
     # R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
-    R['regular_weight_model'] = 'L2'
+    R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
     # R['regular_weight'] = 0.000         # Regularization parameter for weights
     R['regular_weight'] = 0.001           # Regularization parameter for weights
 
@@ -403,8 +395,8 @@ if __name__ == "__main__":
     # R['loss_function'] = 'L2_loss'
     R['loss_function'] = 'lncosh_loss'
 
-    R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
-    # R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
+    # R['hidden_layers'] = (10, 10, 8, 6, 6, 3)  # it is used to debug our work
+    R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
     # R['hidden_layers'] = (100, 100, 80, 60, 60, 40)
     # R['hidden_layers'] = (200, 100, 100, 80, 50, 50)
     # R['hidden_layers'] = (300, 200, 200, 100, 80, 80)
