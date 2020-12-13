@@ -206,7 +206,8 @@ def solve_SIR2COVID(R):
     ndata = np.ones(train_size2batch, dtype=np.float32)
     assert(trainSet_szie + test_size2batch <= len(data))
 
-    train_date, train_data, test_date, test_data = DNN_data.split_csvData2train_test(date, data, size2train=trainSet_szie)
+    train_date, train_data, test_date, test_data = \
+        DNN_data.split_csvData2train_test(date, data, size2train=trainSet_szie)
 
     # 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
     test_t_bach = DNN_data.sample_testDays_serially(test_date, test_size2batch)
@@ -341,7 +342,7 @@ if __name__ == "__main__":
     R['init_penalty2predict_true'] = 50             # Regularization parameter for boundary conditions
     R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
-        R['init_penalty2predict_true'] = 5
+        R['init_penalty2predict_true'] = 2
 
     # R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
@@ -359,8 +360,8 @@ if __name__ == "__main__":
         R['learning_rate'] = 5e-5         # 学习率
         R['lr_decay'] = 1e-5              # 学习率 decay
     R['optimizer_name'] = 'Adam'          # 优化器
-    R['loss_function'] = 'L2_loss'
-    # R['loss_function'] = 'lncosh_loss'
+    # R['loss_function'] = 'L2_loss'
+    R['loss_function'] = 'lncosh_loss'
 
     # R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
     R['hidden_layers'] = (80, 80, 60, 40, 40, 20)

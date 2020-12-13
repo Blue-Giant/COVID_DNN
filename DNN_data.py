@@ -49,7 +49,6 @@ def randSample_Normalize_existData(date_data, data2, batchsize=1, normalFactor=1
     date_temp = []
     data2_temp = []
     data_length = len(date_data)
-    sample_len = data_length - batchsize
     indexes = np.random.randint(data_length, size=batchsize)
     for i_index in indexes:
         date_temp .append(float(date_data[i_index]))
