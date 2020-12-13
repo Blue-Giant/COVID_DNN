@@ -199,12 +199,12 @@ def solve_SIR2COVID(R):
     date, data = DNN_data.load_csvData(filename)
     ndata = np.ones(size2batch, dtype=np.float32)
 
+    train_date, train_data, test_date, test_data = DNN_data.split_csvData2train_test(date, data, size2train=60)
+
     # 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
-    test_bach_size = 5
-    day_begin = date[-1]
-    data_begin = data[-1]
-    test_t_bach = DNN_data.sample_days_serially(day_begin, test_bach_size)
-    i_obs_test = DNN_data.sample_days_serially(data_begin, test_bach_size)
+    test_bach_size = 10
+    test_t_bach = DNN_data.sample_testDays_serially(test_date, test_bach_size)
+    i_obs_test = DNN_data.sample_testData_serially(test_data, test_bach_size, normalFactor=9776000)
 
     # ConfigProto 加上allow_soft_placement=True就可以使用 gpu 了
     config = tf.ConfigProto(allow_soft_placement=True)  # 创建sess的时候对sess进行参数配置
@@ -214,7 +214,8 @@ def solve_SIR2COVID(R):
         sess.run(tf.global_variables_initializer())
         tmp_lr = learning_rate
         for i_epoch in range(R['max_epoch'] + 1):
-            t_batch, i_obs = DNN_data.randSample_Normalize_existData(date, data, batchsize=size2batch, normalFactor=9776000)
+            t_batch, i_obs = DNN_data.randSample_Normalize_existData(train_date, train_data, batchsize=size2batch,
+                                                                     normalFactor=9776000)
             n_obs = ndata.reshape(size2batch, 1)
             tmp_lr = tmp_lr * (1 - lr_decay)
             train_option = True
@@ -327,16 +328,16 @@ if __name__ == "__main__":
     R['output_dim'] = 1                   # 输出维数
 
     # ------------------------------------  神经网络的设置  ----------------------------------------
-    R['batch_size'] = 5                   # 训练数据的批大小
+    R['batch_size'] = 15                   # 训练数据的批大小
 
     R['init_penalty2predict_true'] = 50             # Regularization parameter for boundary conditions
     R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
-        R['init_penalty2predict_true'] = 1
+        R['init_penalty2predict_true'] = 5
 
-    # R['regular_weight_model'] = 'L0'
+    R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
-    R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
+    # R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
     # R['regular_weight'] = 0.000         # Regularization parameter for weights
     R['regular_weight'] = 0.001           # Regularization parameter for weights
 
@@ -353,8 +354,8 @@ if __name__ == "__main__":
     # R['loss_function'] = 'L2_loss'
     R['loss_function'] = 'lncosh_loss'
 
-    R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
-    # R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
+    # R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
+    R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
     # R['hidden_layers'] = (100, 100, 80, 60, 60, 40)
     # R['hidden_layers'] = (200, 100, 100, 80, 50, 50)
     # R['hidden_layers'] = (300, 200, 200, 100, 80, 80)

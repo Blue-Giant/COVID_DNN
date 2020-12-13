@@ -18,6 +18,17 @@ def load_csvData(datafile=None):
     return csvdate, csvdata
 
 
+# 将数据集拆分为训练集合测试集
+def split_csvData2train_test(date_data, data, size2train=50):
+
+    date2train = date_data[0:size2train]
+    data2train = data[0:size2train]
+
+    date2test = date_data[size2train:-1]
+    data2test = data[size2train:-1]
+    return date2train, data2train, date2test, data2test
+
+
 def randSample_existData(data1, data2, batchsize=1):
     data1_temp = []
     data2_temp = []
@@ -33,27 +44,37 @@ def randSample_existData(data1, data2, batchsize=1):
     return data1_samples, data2_samples
 
 
-def randSample_Normalize_existData(data1, data2, batchsize=1, normalFactor=1000):
-    data1_temp = []
+# 从总体数据集中载入部分数据作为训练集
+def randSample_Normalize_existData(date_data, data2, batchsize=1, normalFactor=1000):
+    date_temp = []
     data2_temp = []
-    data_length = len(data1)
+    data_length = len(date_data)
+    sample_len = data_length - batchsize
     indexes = np.random.randint(data_length, size=batchsize)
     for i_index in indexes:
-        data1_temp .append(float(data1[i_index])/float(normalFactor))
+        date_temp .append(float(date_data[i_index]))
         data2_temp .append(float(data2[i_index])/float(normalFactor))
-    data1_samples = np.array(data1_temp)
+    date_samples = np.array(date_temp)
     data2_samples = np.array(data2_temp)
-    data1_samples = data1_samples.reshape(batchsize, 1)
+    date_samples = date_samples.reshape(batchsize, 1)
     data2_samples = data2_samples.reshape(batchsize, 1)
-    return data1_samples, data2_samples
+    return date_samples, data2_samples
 
 
 # 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
-def sample_days_serially(day_base, batch_size):
-    day_it = np.arange(day_base+1, day_base+batch_size+1, dtype='i')
-    day_it = day_it.astype(np.float32)
+def sample_testDays_serially(test_date, batch_size):
+    day_it = test_date[0:batch_size]
     day_it = np.reshape(day_it, newshape=(batch_size, 1))
     return day_it
+
+
+# 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
+def sample_testData_serially(test_data, batch_size, normalFactor=1000):
+    data_it = test_data[0:batch_size]
+    data_it = data_it.astype(np.float32)
+    data_it = np.reshape(data_it, newshape=(batch_size, 1))
+    data_it = data_it/float(normalFactor)
+    return data_it
 
 
 # ---------------------------------------------- 数据集的生成 ---------------------------------------------------
