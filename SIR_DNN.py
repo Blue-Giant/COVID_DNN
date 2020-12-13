@@ -38,7 +38,11 @@ def dictionary_out2file(R_dic, log_fileout):
 
     DNN_tools.log_string('Initial penalty for difference of predict and true: %s\n' % str(R_dic['init_penalty2predict_true']), log_fileout)
 
-    DNN_tools.log_string('Batch-size 2 training: %s\n' % str(R_dic['batch_size']), log_fileout)
+    DNN_tools.log_string('Size 2 training set: %s' % str(R_dic['size2train']), log_fileout)
+
+    DNN_tools.log_string('Batch-size 2 training: %s' % str(R_dic['batch_size2train']), log_fileout)
+
+    DNN_tools.log_string('Batch-size 2 testing: %s\n' % str(R_dic['batch_size2test']), log_fileout)
 
 
 def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_nt, penalty_wb2s, penalty_wb2i, penalty_wb2r,
@@ -73,7 +77,9 @@ def solve_SIR2COVID(R):
     log_fileout = open(os.path.join(log_out_path, 'log_train.txt'), 'w')  # 在这个路径下创建并打开一个可写的 log_train.txt文件
     dictionary_out2file(R, log_fileout)
 
-    size2batch = R['batch_size']
+    trainSet_szie = R['size2train']
+    train_size2batch = R['batch_size2train']
+    test_size2batch = R['batch_size2test']
     pt_penalty_init = R['init_penalty2predict_true']   # Regularization parameter for difference of predict and true
     wb_penalty = R['regular_weight']                   # Regularization parameter for weights
     lr_decay = R['lr_decay']
@@ -197,14 +203,14 @@ def solve_SIR2COVID(R):
     # filename = 'data2csv/Italia_data.csv'
     filename = 'data2csv/Korea_data.csv'
     date, data = DNN_data.load_csvData(filename)
-    ndata = np.ones(size2batch, dtype=np.float32)
+    ndata = np.ones(train_size2batch, dtype=np.float32)
+    assert(trainSet_szie + test_size2batch <= len(data))
 
-    train_date, train_data, test_date, test_data = DNN_data.split_csvData2train_test(date, data, size2train=60)
+    train_date, train_data, test_date, test_data = DNN_data.split_csvData2train_test(date, data, size2train=trainSet_szie)
 
     # 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
-    test_bach_size = 10
-    test_t_bach = DNN_data.sample_testDays_serially(test_date, test_bach_size)
-    i_obs_test = DNN_data.sample_testData_serially(test_data, test_bach_size, normalFactor=9776000)
+    test_t_bach = DNN_data.sample_testDays_serially(test_date, test_size2batch)
+    i_obs_test = DNN_data.sample_testData_serially(test_data, test_size2batch, normalFactor=9776000)
 
     # ConfigProto 加上allow_soft_placement=True就可以使用 gpu 了
     config = tf.ConfigProto(allow_soft_placement=True)  # 创建sess的时候对sess进行参数配置
@@ -214,9 +220,9 @@ def solve_SIR2COVID(R):
         sess.run(tf.global_variables_initializer())
         tmp_lr = learning_rate
         for i_epoch in range(R['max_epoch'] + 1):
-            t_batch, i_obs = DNN_data.randSample_Normalize_existData(train_date, train_data, batchsize=size2batch,
+            t_batch, i_obs = DNN_data.randSample_Normalize_existData(train_date, train_data, batchsize=train_size2batch,
                                                                      normalFactor=9776000)
-            n_obs = ndata.reshape(size2batch, 1)
+            n_obs = ndata.reshape(train_size2batch, 1)
             tmp_lr = tmp_lr * (1 - lr_decay)
             train_option = True
             if R['activate_stage_penalty'] == 1:
@@ -328,16 +334,18 @@ if __name__ == "__main__":
     R['output_dim'] = 1                   # 输出维数
 
     # ------------------------------------  神经网络的设置  ----------------------------------------
-    R['batch_size'] = 15                   # 训练数据的批大小
+    R['size2train'] = 70                  # 训练集的大小
+    R['batch_size2train'] = 20            # 训练数据的批大小
+    R['batch_size2test'] = 10             # 训练数据的批大小
 
     R['init_penalty2predict_true'] = 50             # Regularization parameter for boundary conditions
     R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
         R['init_penalty2predict_true'] = 5
 
-    R['regular_weight_model'] = 'L0'
+    # R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
-    # R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
+    R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
     # R['regular_weight'] = 0.000         # Regularization parameter for weights
     R['regular_weight'] = 0.001           # Regularization parameter for weights
 
@@ -351,8 +359,8 @@ if __name__ == "__main__":
         R['learning_rate'] = 5e-5         # 学习率
         R['lr_decay'] = 1e-5              # 学习率 decay
     R['optimizer_name'] = 'Adam'          # 优化器
-    # R['loss_function'] = 'L2_loss'
-    R['loss_function'] = 'lncosh_loss'
+    R['loss_function'] = 'L2_loss'
+    # R['loss_function'] = 'lncosh_loss'
 
     # R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
     R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
