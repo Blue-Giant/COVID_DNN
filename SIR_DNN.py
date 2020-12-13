@@ -203,15 +203,19 @@ def solve_SIR2COVID(R):
     # filename = 'data2csv/Italia_data.csv'
     filename = 'data2csv/Korea_data.csv'
     date, data = DNN_data.load_csvData(filename)
-    ndata = np.ones(train_size2batch, dtype=np.float32)
-    assert(trainSet_szie + test_size2batch <= len(data))
 
+    assert(trainSet_szie + test_size2batch <= len(data))
     train_date, train_data, test_date, test_data = \
         DNN_data.split_csvData2train_test(date, data, size2train=trainSet_szie)
 
+    if R['total_population'] == 1:
+        ndata2train = np.ones(train_size2batch, dtype=np.float32)*float(9776000)
+    else:
+        ndata2train = np.ones(train_size2batch, dtype=np.float32)
+
     # 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
     test_t_bach = DNN_data.sample_testDays_serially(test_date, test_size2batch)
-    i_obs_test = DNN_data.sample_testData_serially(test_data, test_size2batch, normalFactor=9776000)
+    i_obs_test = DNN_data.sample_testData_serially(test_data, test_size2batch, normalFactor=R['total_population'])
 
     # ConfigProto 加上allow_soft_placement=True就可以使用 gpu 了
     config = tf.ConfigProto(allow_soft_placement=True)  # 创建sess的时候对sess进行参数配置
@@ -222,8 +226,8 @@ def solve_SIR2COVID(R):
         tmp_lr = learning_rate
         for i_epoch in range(R['max_epoch'] + 1):
             t_batch, i_obs = DNN_data.randSample_Normalize_existData(train_date, train_data, batchsize=train_size2batch,
-                                                                     normalFactor=9776000)
-            n_obs = ndata.reshape(train_size2batch, 1)
+                                                                     normalFactor=R['total_population'])
+            n_obs = ndata2train.reshape(train_size2batch, 1)
             tmp_lr = tmp_lr * (1 - lr_decay)
             train_option = True
             if R['activate_stage_penalty'] == 1:
@@ -380,13 +384,15 @@ if __name__ == "__main__":
 
     # 激活函数的选择
     # R['act_name'] = 'relu'
-    R['act_name'] = 'tanh'
+    # R['act_name'] = 'tanh'
     # R['act_name'] = 'leaky_relu'
     # R['act_name'] = 'srelu'
-    # R['act_name'] = 's2relu'
+    R['act_name'] = 's2relu'
     # R['act_name'] = 'slrelu'
     # R['act_name'] = 'elu'
     # R['act_name'] = 'selu'
     # R['act_name'] = 'phi'
+
+    R['total_population'] = 9776000
 
     solve_SIR2COVID(R)
