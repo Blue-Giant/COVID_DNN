@@ -36,11 +36,18 @@ def dictionary_out2file(R_dic, log_fileout):
     else:
         DNN_tools.log_string('no activate the stop_step and given_step = default: %s\n' % str(R_dic['max_epoch']), log_fileout)
 
-    DNN_tools.log_string('Initial penalty for difference of predict and true: %s\n' % str(R_dic['init_penalty2predict_true']), log_fileout)
+    DNN_tools.log_string(
+        'Initial penalty for difference of predict and true: %s\n' % str(R_dic['init_penalty2predict_true']),
+        log_fileout)
 
-    DNN_tools.log_string('Size 2 training set: %s' % str(R_dic['size2train']), log_fileout)
+    DNN_tools.log_string('The model of regular weights and biases: %s\n' % str(R_dic['regular_weight_model']), log_fileout)
 
-    DNN_tools.log_string('Batch-size 2 training: %s' % str(R_dic['batch_size2train']), log_fileout)
+    DNN_tools.log_string('Regularization parameter for weights and biases: %s\n' % str(R_dic['regular_weight']),
+                         log_fileout)
+
+    DNN_tools.log_string('Size 2 training set: %s\n' % str(R_dic['size2train']), log_fileout)
+
+    DNN_tools.log_string('Batch-size 2 training: %s\n' % str(R_dic['batch_size2train']), log_fileout)
 
     DNN_tools.log_string('Batch-size 2 testing: %s\n' % str(R_dic['batch_size2test']), log_fileout)
 
