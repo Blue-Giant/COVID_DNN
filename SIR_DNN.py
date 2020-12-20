@@ -131,13 +131,13 @@ def solve_SIR2COVID(R):
                 R_NN = DNN_base.PDE_DNN_BN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_beta = DNN_base.PDE_DNN_BN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_gamma = DNN_base.PDE_DNN_BN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func, is_training=train_opt)
-            elif 'PDE_DNN_SCALE' == str.upper(R['model']):
-                freq = np.concatenate(([1], np.arange(1, 100 - 1)), axis=0)
-                S_NN = DNN_base.PDE_DNN_scale(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
-                I_NN = DNN_base.PDE_DNN_scale(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
-                R_NN = DNN_base.PDE_DNN_scale(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
-                in_beta = DNN_base.PDE_DNN_scale(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
-                in_gamma = DNN_base.PDE_DNN_scale(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
+            elif 'PDE_DNN_SCALEOUT' == str.upper(R['model']):
+                freq = np.concatenate(([1], np.arange(1, 20)*10), axis=0)
+                S_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
+                I_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
+                R_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
+                in_beta = DNN_base.PDE_DNN_scaleOut(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
+                in_gamma = DNN_base.PDE_DNN_scaleOut(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
             beta = tf.exp(in_beta)
             gamma = tf.exp(in_gamma)
@@ -213,7 +213,14 @@ def solve_SIR2COVID(R):
 
     assert(trainSet_szie + test_size2batch <= len(data))
     train_date, train_data, test_date, test_data = \
-        DNN_data.split_csvData2train_test(date, data, size2train=trainSet_szie)
+        DNN_data.split_csvData2train_test(date, data, size2train=trainSet_szie, normalFactor=R['total_population'])
+
+    if R['total_population'] != 1:
+        Have_normal = True
+        NormalFactor = 1.0
+    else:
+        Have_normal = False
+        NormalFactor = R['total_population']
 
     if R['total_population'] == 1:
         ndata2train = np.ones(train_size2batch, dtype=np.float32)*float(9776000)
@@ -222,7 +229,7 @@ def solve_SIR2COVID(R):
 
     # 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
     test_t_bach = DNN_data.sample_testDays_serially(test_date, test_size2batch)
-    i_obs_test = DNN_data.sample_testData_serially(test_data, test_size2batch, normalFactor=R['total_population'])
+    i_obs_test = DNN_data.sample_testData_serially(test_data, test_size2batch, normalFactor=NormalFactor)
 
     # ConfigProto 加上allow_soft_placement=True就可以使用 gpu 了
     config = tf.ConfigProto(allow_soft_placement=True)  # 创建sess的时候对sess进行参数配置
@@ -233,7 +240,7 @@ def solve_SIR2COVID(R):
         tmp_lr = learning_rate
         for i_epoch in range(R['max_epoch'] + 1):
             t_batch, i_obs = DNN_data.randSample_Normalize_existData(train_date, train_data, batchsize=train_size2batch,
-                                                                     normalFactor=R['total_population'])
+                                                                     normalFactor=NormalFactor)
             n_obs = ndata2train.reshape(train_size2batch, 1)
             tmp_lr = tmp_lr * (1 - lr_decay)
             train_option = True
@@ -387,7 +394,7 @@ if __name__ == "__main__":
     # 网络模型的选择
     R['model'] = 'PDE_DNN'
     # R['model'] = 'PDE_DNN_BN'
-    # R['model'] = 'PDE_DNN_scale'
+    # R['model'] = 'PDE_DNN_scaleOut'
 
     # 激活函数的选择
     # R['act_name'] = 'relu'

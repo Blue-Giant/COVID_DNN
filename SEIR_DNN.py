@@ -148,22 +148,19 @@ def solve_SEIR2COVID(R):
                 in_alpha = DNN_base.PDE_DNN_BN(T_it, Weight2alpha, Bias2alpha, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_beta = DNN_base.PDE_DNN_BN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_gamma = DNN_base.PDE_DNN_BN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func, is_training=train_opt)
-            elif 'PDE_DNN_SCALE' == str.upper(R['model']):
-                freq = np.concatenate(([1], np.arange(1, 100 - 1)), axis=0)
-                S_NN = DNN_base.PDE_DNN_scale(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
-                E_NN = DNN_base.PDE_DNN_scale(T_it, Weight2E, Bias2E, hidden_layers, freq, activate_name=act_func)
-                I_NN = DNN_base.PDE_DNN_scale(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
-                R_NN = DNN_base.PDE_DNN_scale(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
-                in_alpha = DNN_base.PDE_DNN_scale(T_it, Weight2alpha, Bias2alpha, hidden_layers, activate_name=act_func)
-                in_beta = DNN_base.PDE_DNN_scale(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
-                in_gamma = DNN_base.PDE_DNN_scale(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
+            elif 'PDE_DNN_SCALEOUT' == str.upper(R['model']):
+                freq = np.concatenate(([1], np.arange(1, 20)*10), axis=0)
+                S_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
+                E_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2E, Bias2E, hidden_layers, freq, activate_name=act_func)
+                I_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
+                R_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
+                in_alpha = DNN_base.PDE_DNN_scaleOut(T_it, Weight2alpha, Bias2alpha, hidden_layers, freq, activate_name=act_func)
+                in_beta = DNN_base.PDE_DNN_scaleOut(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
+                in_gamma = DNN_base.PDE_DNN_scaleOut(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
             alpha = tf.exp(in_alpha)
             beta = tf.exp(in_beta)
             gamma = tf.exp(in_gamma)
-            # alpha = tf.reduce_mean(tf.exp(in_alpha), axis=0)
-            # beta = tf.reduce_mean(tf.exp(in_beta), axis=0)
-            # gamma = tf.reduce_mean(tf.exp(in_gamma), axis=0)
             N_NN = S_NN + E_NN + I_NN + R_NN
 
             dS_NN2t = tf.gradients(S_NN, T_it)[0]
@@ -174,8 +171,8 @@ def solve_SEIR2COVID(R):
 
             temp_snn2t = -(beta * tf.multiply(S_NN, I_NN))/N_NN    # / :无论多少维的tensor，都是对于最终的每个元素都除的
             temp_enn2t = beta*tf.multiply(S_NN, I_NN) - alpha * E_NN
-            temp_inn2t = alpha*E_NN - gamma * I_NN
-            temp_rnn2t = gamma*I_NN
+            temp_inn2t = alpha * E_NN - gamma * I_NN
+            temp_rnn2t = gamma * I_NN
 
             if str.lower(R['loss_function']) == 'l2_loss':
                 # LossS_Net_obs = tf.reduce_mean(tf.square(S_NN - S_observe))
@@ -218,10 +215,10 @@ def solve_SEIR2COVID(R):
                 regular_WB2I = tf.constant(0.0)
                 regular_WB2R = tf.constant(0.0)
 
-            PWB2E = wb_penalty*regular_WB2E
+            PWB2E = wb_penalty * regular_WB2E
             PWB2S = wb_penalty * regular_WB2S
-            PWB2I = wb_penalty*regular_WB2I
-            PWB2R = wb_penalty*regular_WB2R
+            PWB2I = wb_penalty * regular_WB2I
+            PWB2R = wb_penalty * regular_WB2R
 
             Loss2S = Loss2dS + PWB2S
             Loss2E = Loss2dE + PWB2E
@@ -248,7 +245,14 @@ def solve_SEIR2COVID(R):
     assert (trainSet_szie + test_size2batch <= len(data))
 
     train_date, train_data, test_date, test_data = \
-        DNN_data.split_csvData2train_test(date, data, size2train=trainSet_szie)
+        DNN_data.split_csvData2train_test(date, data, size2train=trainSet_szie, normalFactor=R['total_population'])
+
+    if R['total_population'] != 1:
+        Have_normal = True
+        NormalFactor = 1.0
+    else:
+        Have_normal = False
+        NormalFactor = R['total_population']
 
     if R['total_population'] == 1:
         ndata2train = np.ones(train_size2batch, dtype=np.float32) * float(9776000)
@@ -257,7 +261,7 @@ def solve_SEIR2COVID(R):
 
     # 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
     test_t_bach = DNN_data.sample_testDays_serially(test_date, test_size2batch)
-    i_obs_test = DNN_data.sample_testData_serially(test_data, test_size2batch, normalFactor=R['total_population'])
+    i_obs_test = DNN_data.sample_testData_serially(test_data, test_size2batch, NormalFactor)
 
     # ConfigProto 加上allow_soft_placement=True就可以使用 gpu 了
     config = tf.ConfigProto(allow_soft_placement=True)  # 创建sess的时候对sess进行参数配置
@@ -267,8 +271,8 @@ def solve_SEIR2COVID(R):
         sess.run(tf.global_variables_initializer())
         tmp_lr = learning_rate
         for i_epoch in range(R['max_epoch'] + 1):
-            t_batch, i_obs = DNN_data.randSample_Normalize_existData(date, data, batchsize=train_size2batch,
-                                                                     normalFactor=R['total_population'])
+            t_batch, i_obs = DNN_data.randSample_Normalize_existData(train_date, train_data, batchsize=train_size2batch,
+                                                                     normalFactor=NormalFactor)
             n_obs = ndata2train.reshape(train_size2batch, 1)
             tmp_lr = tmp_lr * (1 - lr_decay)
             train_option = True
@@ -427,7 +431,7 @@ if __name__ == "__main__":
     # 网络模型的选择
     R['model'] = 'PDE_DNN'
     # R['model'] = 'PDE_DNN_BN'
-    # R['model'] = 'PDE_DNN_scale'
+    # R['model'] = 'PDE_DNN_scaleOut'
 
     # 激活函数的选择
     # R['act_name'] = 'relu'
@@ -441,5 +445,6 @@ if __name__ == "__main__":
     # R['act_name'] = 'phi'
 
     R['total_population'] = 9776000
+    # R['total_population'] = 1
 
     solve_SEIR2COVID(R)
