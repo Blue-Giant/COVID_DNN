@@ -306,7 +306,7 @@ def solve_SIR2COVID(R):
         plotData.plotTest_MSE_REL(test_mse2I_all, test_rel2I_all, test_epoch, actName='Infected', seedNo=R['seed'],
                                   outPath=R['FolderName'], yaxis_scale=True)
         saveData.save_SIR_testSolus2mat_Covid(s_nn2test, i_nn2test, r_nn2test, name2solus1='snn2test',
-                                              name2solus2='enn2test', name2solus3='inn2test', outPath=R['FolderName'])
+                                              name2solus2='inn2test', name2solus3='rnn2test', outPath=R['FolderName'])
         saveData.save_SIR_testParas2mat_Covid(beta_test, gamma_test, name2para1='beta2test', name2para2='gamma2test',
                                               outPath=R['FolderName'])
 
@@ -357,7 +357,7 @@ if __name__ == "__main__":
     R['batch_size2train'] = 20            # 训练数据的批大小
     R['batch_size2test'] = 10             # 训练数据的批大小
 
-    R['init_penalty2predict_true'] = 50             # Regularization parameter for boundary conditions
+    R['init_penalty2predict_true'] = 50   # Regularization parameter for boundary conditions
     R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
         R['init_penalty2predict_true'] = 2
