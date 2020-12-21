@@ -4,6 +4,7 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.training import moving_averages
+
 #
 # 用于最中执行batch normalization的函数
 # tf.nn.batch_normalization(
@@ -109,6 +110,67 @@ def srelu(x):
 
 def s2relu(x):
     return tf.nn.relu(1-x)*tf.nn.relu(x)*tf.sin(2*np.pi*x)
+    # return 1.5*tf.nn.relu(1-x)*tf.nn.relu(x)*tf.sin(2*np.pi*x)
+    # return 1.25*tf.nn.relu(1-x)*tf.nn.relu(x)*tf.sin(2*np.pi*x)
+
+
+def s3relu(x):
+    # return 0.5*tf.nn.relu(1-x)*tf.nn.relu(1+x)*tf.sin(2*np.pi*x)
+    # return 0.21*tf.nn.relu(1-x)*tf.nn.relu(1+x)*tf.sin(2*np.pi*x)
+    # return tf.nn.relu(1 - x) * tf.nn.relu(x) * (tf.sin(2 * np.pi * x) + tf.cos(2 * np.pi * x))   # (work不好)
+    # return tf.nn.relu(1 - x) * tf.nn.relu(1 + x) * (tf.sin(2 * np.pi * x) + tf.cos(2 * np.pi * x)) #（不work）
+    return tf.nn.relu(1-tf.abs(x))*tf.nn.relu(tf.abs(x))*tf.sin(2*np.pi*tf.abs(x))  # work 不如 s2relu
+    # return tf.nn.relu(1-tf.abs(x))*tf.nn.relu(tf.abs(x))*tf.sin(2*np.pi*x)            # work 不如 s2relu
+    # return 1.5*tf.nn.relu(1-tf.abs(x))*tf.nn.relu(tf.abs(x))*tf.sin(np.pi*x)
+    # return tf.nn.relu(1 - x) * tf.nn.relu(x+0.5) * tf.sin(2 * np.pi * x)
+
+
+def csrelu(x):
+    # return tf.nn.relu(1-x)*tf.nn.relu(x)*tf.cos(np.pi*x)
+    return 1.5*tf.nn.relu(1 - x) * tf.nn.relu(x) * tf.cos(np.pi * x)
+    # return tf.nn.relu(1-tf.abs(x))*tf.nn.relu(tf.abs(x))*tf.cos(np.pi*x)
+
+
+def stanh(x):
+    # return tf.tanh(x)*tf.sin(2*np.pi*x)
+    return tf.sin(2*np.pi*tf.tanh(x))
+
+
+def gauss(x):
+    # return 0.2*tf.exp(-4*x*x)
+    return tf.exp(-4 * x * x)
+    # return 0.25*tf.exp(-7.5*(x-0.5)*(x-0.5))
+
+
+def mexican(x):
+    return (1-x*x)*tf.exp(-0.5*x*x)
+
+
+def modify_mexican(x):
+    # return 1.25*x*tf.exp(-0.25*x*x)
+    # return x * tf.exp(-0.125 * x * x)
+    return x * tf.exp(-0.075*x * x)
+    # return -1.25*x*tf.exp(-0.25*x*x)
+
+
+def sm_mexican(x):
+    # return tf.sin(np.pi*x) * x * tf.exp(-0.075*x * x)
+    # return tf.sin(np.pi*x) * x * tf.exp(-0.125*x * x)
+    return 2.0*tf.sin(np.pi*x) * x * tf.exp(-0.5*x * x)
+
+
+def singauss(x):
+    # return 0.6 * tf.exp(-4 * x * x) * tf.sin(np.pi * x)
+    # return 0.6 * tf.exp(-5 * x * x) * tf.sin(np.pi * x)
+    # return 0.75*tf.exp(-5*x*x)*tf.sin(2*np.pi*x)
+    # return tf.exp(-(x-0.5) * (x - 0.5)) * tf.sin(np.pi * x)
+    # return 0.25 * tf.exp(-3.5 * x * x) * tf.sin(2 * np.pi * x)
+    # return 0.225*tf.exp(-2.5 * (x - 0.5) * (x - 0.5)) * tf.sin(2*np.pi * x)
+    return 0.225 * tf.exp(-2 * (x - 0.5) * (x - 0.5)) * tf.sin(2 * np.pi * x)
+    # return 0.4 * tf.exp(-10 * (x - 0.5) * (x - 0.5)) * tf.sin(2 * np.pi * x)
+    # return 0.45 * tf.exp(-5 * (x - 1.0) * (x - 1.0)) * tf.sin(np.pi * x)
+    # return 0.3 * tf.exp(-5 * (x - 1.0) * (x - 1.0)) * tf.sin(2 * np.pi * x)
+    # return tf.sin(2*np.pi*tf.exp(-0.5*x*x))
 
 
 def powsin_srelu(x):
@@ -404,6 +466,112 @@ def PDE_DNN(variable_input, Weights, Biases, hiddens, activate_name=None):
     return output
 
 
+def DNN_Fourier_Base(variable_input, Weights, Biases, hiddens, activate_name=None):
+    if activate_name == 'relu':
+        DNN_activation = tf.nn.relu
+    elif activate_name == 'leaky_relu':
+        DNN_activation = tf.nn.leaky_relu(0.2)
+    elif activate_name == 'elu':
+        DNN_activation = tf.nn.elu
+    elif activate_name == 'tanh':
+        DNN_activation = tf.nn.tanh
+    elif activate_name == 'sin':
+        DNN_activation = mysin
+    elif activate_name == 'srelu':
+        DNN_activation = srelu
+    elif activate_name == 'powsin_srelu':
+        DNN_activation = powsin_srelu
+    elif activate_name == 's2relu':
+        DNN_activation = s2relu
+    elif activate_name == 'sin2_srelu':
+        DNN_activation = sin2_srelu
+    elif activate_name == 'slrelu':
+        DNN_activation = slrelu
+    elif activate_name == 'selu':
+        DNN_activation = selu
+    elif activate_name == 'phi':
+        DNN_activation = phi
+
+    layers = len(Weights)  # 得到输入到输出的层数，即隐藏层层数
+    H = variable_input  # 代表输入数据，即输入层
+    W_in = Weights[0]
+    B_in = Biases[0]
+    H = tf.add(tf.matmul(H, W_in), B_in)
+
+    H = 0.5*(tf.sin(H)+tf.cos(H))
+
+    hidden_record = hiddens[0]
+    for k in range(layers - 2):
+        H_pre = H
+        W = Weights[k + 1]
+        B = Biases[k + 1]
+        H = DNN_activation(tf.add(tf.matmul(H, W), B))
+        if hiddens[k + 1] == hidden_record:
+            H = H + H_pre
+        hidden_record = hiddens[k + 1]
+
+    W_out = Weights[-1]
+    B_out = Biases[-1]
+    output = tf.add(tf.matmul(H, W_out), B_out)
+    # 下面这个是输出层
+    output = tf.nn.relu(output)
+    return output
+
+
+def DNN_Fourier_Gauss(variable_input, Weights, Biases, hiddens, activate_name=None):
+    if activate_name == 'relu':
+        DNN_activation = tf.nn.relu
+    elif activate_name == 'leaky_relu':
+        DNN_activation = tf.nn.leaky_relu(0.2)
+    elif activate_name == 'elu':
+        DNN_activation = tf.nn.elu
+    elif activate_name == 'tanh':
+        DNN_activation = tf.nn.tanh
+    elif activate_name == 'sin':
+        DNN_activation = mysin
+    elif activate_name == 'srelu':
+        DNN_activation = srelu
+    elif activate_name == 'powsin_srelu':
+        DNN_activation = powsin_srelu
+    elif activate_name == 's2relu':
+        DNN_activation = s2relu
+    elif activate_name == 'sin2_srelu':
+        DNN_activation = sin2_srelu
+    elif activate_name == 'slrelu':
+        DNN_activation = slrelu
+    elif activate_name == 'selu':
+        DNN_activation = selu
+    elif activate_name == 'phi':
+        DNN_activation = phi
+
+    layers = len(Weights)  # 得到输入到输出的层数，即隐藏层层数
+    H = variable_input  # 代表输入数据，即输入层
+    W_in = Weights[0]
+    B_in = Biases[0]
+    H = tf.add(tf.matmul(H, W_in), B_in)
+
+    H = 0.5*(tf.sin(H)+tf.cos(H))
+
+    hidden_record = hiddens[0]
+    for k in range(layers - 2):
+        H_pre = H
+        W = Weights[k + 1]
+        B = Biases[k + 1]
+        H = DNN_activation(tf.add(tf.matmul(H, W), B))
+        if hiddens[k + 1] == hidden_record:
+            H = H + H_pre
+        hidden_record = hiddens[k + 1]
+
+    W_out = Weights[-1]
+    B_out = Biases[-1]
+    output = tf.add(tf.matmul(H, W_out), B_out)
+    # 下面这个是输出层
+    # output = gauss(output)
+    output = srelu(output)
+    # output = tf.nn.relu(output)
+    return output
+
+
 def PDE_DNN_BN(variable_input, Weights, Biases, hiddens, activate_name=None, is_training=None):
     if activate_name == 'relu':
         DNN_activation = tf.nn.relu
@@ -519,6 +687,66 @@ def PDE_DNN_scale(variable_input, Weights, Biases, hiddens, freq_frag, activate_
     return output
 
 
+def PDE_DNN_scaleOut(variable_input, Weights, Biases, hiddens, freq_frag, activate_name=None):
+    if activate_name == 'relu':
+        DNN_activation = tf.nn.relu
+    elif activate_name == 'leaky_relu':
+        DNN_activation = tf.nn.leaky_relu(0.2)
+    elif activate_name == 'elu':
+        DNN_activation = tf.nn.elu
+    elif activate_name == 'tanh':
+        DNN_activation = tf.nn.tanh
+    elif activate_name == 'sin':
+        DNN_activation = mysin
+    elif activate_name == 'srelu':
+        DNN_activation = srelu
+    elif activate_name == 'powsin_srelu':
+        DNN_activation = powsin_srelu
+    elif activate_name == 's2relu':
+        DNN_activation = s2relu
+    elif activate_name == 'sin2_srelu':
+        DNN_activation = sin2_srelu
+    elif activate_name == 'slrelu':
+        DNN_activation = slrelu
+    elif activate_name == 'selu':
+        DNN_activation = selu
+    elif activate_name == 'phi':
+        DNN_activation = phi
+
+    layers = len(Weights)  # 得到输入到输出的层数，即隐藏层层数
+    H = variable_input  # 代表输入数据，即输入层
+    hidden_record = 0
+    for k in range(layers - 1):
+        H_pre = H
+        W = Weights[k]
+        B = Biases[k]
+        H = DNN_activation(tf.add(tf.matmul(H, W), B))
+        if hiddens[k] == hidden_record:
+            H = H + H_pre
+        hidden_record = hiddens[k]
+
+    W_out = Weights[-1]
+    B_out = Biases[-1]
+
+    Unit_num = int(hiddens[-1] / len(freq_frag))
+
+    # np.repeat(a, repeats, axis=None)
+    # 输入: a是数组,repeats是各个元素重复的次数(repeats一般是个标量,稍复杂点是个list),在axis的方向上进行重复
+    # 返回: 如果不指定axis,则将重复后的结果展平(维度为1)后返回;如果指定axis,则不展平
+    mixcoe = np.repeat(freq_frag, Unit_num)
+
+    # 将 int 型的 mixcoe 转化为 发np.flost32 型的 mixcoe，mixcoe[: units[1]]省略了行的维度
+    mixcoe = mixcoe[: hiddens[0]].astype(np.float32)
+
+    # 这个的作用是什么？
+    mixcoe = np.concatenate((mixcoe, np.ones([hiddens[-1] - Unit_num * len(freq_frag)]) * freq_frag[-1]))
+
+    output = tf.add(tf.matmul(H*mixcoe, W_out), B_out)
+    # 下面这个是输出层
+    output = tf.nn.relu(output)
+    return output
+
+
 def PDE_DNN_adapt_scale(variable_input, Weights, Biases, hiddens, freq_frag, activate_name=None):
     if activate_name == 'relu':
         DNN_activation = tf.nn.relu
@@ -589,7 +817,7 @@ def PDE_DNN_adapt_scale(variable_input, Weights, Biases, hiddens, freq_frag, act
     return output
 
 
-def PDE_DNN_sinscale(variable_input, Weights, Biases, hiddens, freq_frag, activate_name=None):
+def PDE_DNN_Fouier_Base(variable_input, Weights, Biases, hiddens, freq_frag, activate_name=None):
     if activate_name == 'relu':
         DNN_activation = tf.nn.relu
     elif activate_name == 'leaky_relu':
@@ -641,10 +869,8 @@ def PDE_DNN_sinscale(variable_input, Weights, Biases, hiddens, freq_frag, activa
     if len(freq_frag) == 1:
         H = tf.add(tf.matmul(H, W_in), B_in)
     else:
-        H = tf.add(tf.matmul(H, W_in)*mixcoe, B_in)
-    # H = tf.sin(H)
-    H = tf.sin(H)*tf.nn.relu(H)*tf.nn.relu(1-H)
-    # H = act_func(H)
+        H = tf.matmul(H, W_in)*mixcoe
+    H = 0.5*(tf.sin(H)+tf.cos(H))
 
     hiddens_record = hiddens[0]
     for k in range(layers-2):

@@ -60,21 +60,21 @@ def print_and_log2train(i_epoch, run_time, tmp_lr, temp_penalty_nt, penalty_wb2s
     print('penalty weights and biases for S: %f' % penalty_wb2s)
     print('penalty weights and biases for I: %f' % penalty_wb2i)
     print('penalty weights and biases for R: %f' % penalty_wb2r)
-    print('loss for S: %.10f' % loss_s)
-    print('loss for I: %.10f' % loss_i)
-    print('loss for R: %.10f' % loss_r)
-    print('total loss: %.10f\n' % loss_n)
+    print('loss for S: %.16f' % loss_s)
+    print('loss for I: %.16f' % loss_i)
+    print('loss for R: %.16f' % loss_r)
+    print('total loss: %.16f\n' % loss_n)
 
     DNN_tools.log_string('train epoch: %d,time: %.3f' % (i_epoch, run_time), log_out)
     DNN_tools.log_string('learning rate: %f' % tmp_lr, log_out)
     DNN_tools.log_string('penalty for difference of predict and true : %f' % temp_penalty_nt, log_out)
     DNN_tools.log_string('penalty weights and biases for S: %f' % penalty_wb2s, log_out)
     DNN_tools.log_string('penalty weights and biases for I: %f' % penalty_wb2i, log_out)
-    DNN_tools.log_string('penalty weights and biases for R: %f' % penalty_wb2r, log_out)
-    DNN_tools.log_string('loss for S: %.10f' % loss_s, log_out)
-    DNN_tools.log_string('loss for I: %.10f' % loss_i, log_out)
-    DNN_tools.log_string('loss for R: %.10f' % loss_r, log_out)
-    DNN_tools.log_string('total loss: %.10f \n\n' % loss_n, log_out)
+    DNN_tools.log_string('penalty weights and biases for R: %.10f' % penalty_wb2r, log_out)
+    DNN_tools.log_string('loss for S: %.16f' % loss_s, log_out)
+    DNN_tools.log_string('loss for I: %.16f' % loss_i, log_out)
+    DNN_tools.log_string('loss for R: %.16f' % loss_r, log_out)
+    DNN_tools.log_string('total loss: %.16f \n\n' % loss_n, log_out)
 
 
 def solve_SIR2COVID(R):
@@ -125,6 +125,12 @@ def solve_SIR2COVID(R):
                 R_NN = DNN_base.PDE_DNN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
                 in_beta = DNN_base.PDE_DNN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
+            elif 'PDE_DNN_Fourier' == R['model']:
+                S_NN = DNN_base.DNN_Fourier_Gauss(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
+                I_NN = DNN_base.DNN_Fourier_Gauss(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func)
+                R_NN = DNN_base.DNN_Fourier_Gauss(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
+                in_beta = DNN_base.DNN_Fourier_Base(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
+                in_gamma = DNN_base.DNN_Fourier_Base(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
             elif 'PDE_DNN_BN' == str.upper(R['model']):
                 S_NN = DNN_base.PDE_DNN_BN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func, is_training=train_opt)
                 I_NN = DNN_base.PDE_DNN_BN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func, is_training=train_opt)
@@ -139,8 +145,10 @@ def solve_SIR2COVID(R):
                 in_beta = DNN_base.PDE_DNN_scaleOut(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN_scaleOut(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
-            beta = tf.exp(in_beta)
-            gamma = tf.exp(in_gamma)
+            # beta = tf.exp(in_beta)
+            # gamma = tf.exp(in_gamma)
+            beta = in_beta
+            gamma = in_gamma
             N_NN = S_NN + I_NN + R_NN
 
             dS_NN2t = tf.gradients(S_NN, T_it)[0]
@@ -348,10 +356,11 @@ if __name__ == "__main__":
         epoch_stop = input('please input a stop epoch:')
         R['max_epoch'] = int(epoch_stop)
 
+    # ----------------------------------------- Convid 设置 ---------------------------------
     R['eqs_name'] = 'SIR'
     R['input_dim'] = 1                    # 输入维数，即问题的维数(几元问题)
     R['output_dim'] = 1                   # 输出维数
-
+    R['total_population'] = 9776000
     # ------------------------------------  神经网络的设置  ----------------------------------------
     R['size2train'] = 70                  # 训练集的大小
     R['batch_size2train'] = 20            # 训练数据的批大小
@@ -362,12 +371,15 @@ if __name__ == "__main__":
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
         R['init_penalty2predict_true'] = 2
 
-    # R['regular_weight_model'] = 'L0'
+    R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
-    R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
-    # R['regular_weight'] = 0.000         # Regularization parameter for weights
-    R['regular_weight'] = 0.001           # Regularization parameter for weights
+    # R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
+    R['regular_weight'] = 0.000             # Regularization parameter for weights
+    # R['regular_weight'] = 0.001           # Regularization parameter for weights
 
+    R['optimizer_name'] = 'Adam'  # 优化器
+    R['loss_function'] = 'L2_loss'
+    # R['loss_function'] = 'lncosh_loss'
     if 50000 < R['max_epoch']:
         R['learning_rate'] = 2e-4         # 学习率
         R['lr_decay'] = 5e-5              # 学习率 decay
@@ -377,12 +389,10 @@ if __name__ == "__main__":
     else:
         R['learning_rate'] = 5e-5         # 学习率
         R['lr_decay'] = 1e-5              # 学习率 decay
-    R['optimizer_name'] = 'Adam'          # 优化器
-    # R['loss_function'] = 'L2_loss'
-    R['loss_function'] = 'lncosh_loss'
 
     # R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
-    R['hidden_layers'] = (80, 80, 60, 40, 40, 20)
+    R['hidden_layers'] = (50, 50, 30, 30, 20)  # 1*50+50*50+50*30+30*30+30*20+20*1 = 5570
+    # R['hidden_layers'] = (80, 80, 60, 40, 40, 20)  # 80+80*80+80*60+60*40+40*40+40*20+20*1 = 16100
     # R['hidden_layers'] = (100, 100, 80, 60, 60, 40)
     # R['hidden_layers'] = (200, 100, 100, 80, 50, 50)
     # R['hidden_layers'] = (300, 200, 200, 100, 80, 80)
@@ -392,21 +402,20 @@ if __name__ == "__main__":
     # R['hidden_layers'] = (1000, 500, 400, 300, 300, 200, 100, 100)
 
     # 网络模型的选择
-    R['model'] = 'PDE_DNN'
+    # R['model'] = 'PDE_DNN'
     # R['model'] = 'PDE_DNN_BN'
     # R['model'] = 'PDE_DNN_scaleOut'
+    R['model'] = 'PDE_DNN_Fourier'
 
     # 激活函数的选择
     # R['act_name'] = 'relu'
-    # R['act_name'] = 'tanh'
+    R['act_name'] = 'tanh'
     # R['act_name'] = 'leaky_relu'
     # R['act_name'] = 'srelu'
-    R['act_name'] = 's2relu'
+    # R['act_name'] = 's2relu'
     # R['act_name'] = 'slrelu'
     # R['act_name'] = 'elu'
     # R['act_name'] = 'selu'
     # R['act_name'] = 'phi'
-
-    R['total_population'] = 9776000
 
     solve_SIR2COVID(R)
