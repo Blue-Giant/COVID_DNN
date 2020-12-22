@@ -140,6 +140,14 @@ def solve_SEIR2COVID(R):
                 in_alpha = DNN_base.PDE_DNN(T_it, Weight2alpha, Bias2alpha, hidden_layers, activate_name=act_func)
                 in_beta = DNN_base.PDE_DNN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
+            elif 'PDE_DNN_Fourier' == R['model']:
+                S_NN = DNN_base.PDE_DNN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
+                E_NN = DNN_base.PDE_DNN(T_it, Weight2E, Bias2E, hidden_layers, activate_name=act_func)
+                I_NN = DNN_base.PDE_DNN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func)
+                R_NN = DNN_base.PDE_DNN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
+                in_alpha = DNN_base.PDE_DNN(T_it, Weight2alpha, Bias2alpha, hidden_layers, activate_name=act_func)
+                in_beta = DNN_base.PDE_DNN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
+                in_gamma = DNN_base.PDE_DNN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
             elif 'PDE_DNN_BN' == str.upper(R['model']):
                 S_NN = DNN_base.PDE_DNN_BN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func, is_training=train_opt)
                 E_NN = DNN_base.PDE_DNN_BN(T_it, Weight2E, Bias2E, hidden_layers, activate_name=act_func, is_training=train_opt)
@@ -161,6 +169,12 @@ def solve_SEIR2COVID(R):
             alpha = tf.exp(in_alpha)
             beta = tf.exp(in_beta)
             gamma = tf.exp(in_gamma)
+
+            S_NN = DNN_base.gauss(S_NN)
+            E_NN = DNN_base.gauss(E_NN)
+            I_NN = DNN_base.gauss(I_NN)
+            R_NN = DNN_base.gauss(R_NN)
+
             N_NN = S_NN + E_NN + I_NN + R_NN
 
             dS_NN2t = tf.gradients(S_NN, T_it)[0]
@@ -429,9 +443,10 @@ if __name__ == "__main__":
     # R['hidden_layers'] = (1000, 500, 400, 300, 300, 200, 100, 100)
 
     # 网络模型的选择
-    R['model'] = 'PDE_DNN'
+    # R['model'] = 'PDE_DNN'
     # R['model'] = 'PDE_DNN_BN'
     # R['model'] = 'PDE_DNN_scaleOut'
+    R['model'] = 'PDE_DNN_Fourier'
 
     # 激活函数的选择
     # R['act_name'] = 'relu'
