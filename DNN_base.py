@@ -138,7 +138,7 @@ def stanh(x):
 
 def gauss(x):
     # return 0.2*tf.exp(-4*x*x)
-    return tf.exp(-4 * x * x)
+    return 0.25*tf.exp(-4 * x * x)
     # return 0.25*tf.exp(-7.5*(x-0.5)*(x-0.5))
 
 
@@ -514,60 +514,6 @@ def DNN_Fourier_Base(variable_input, Weights, Biases, hiddens, activate_name=Non
     B_out = Biases[-1]
     output = tf.add(tf.matmul(H, W_out), B_out)
     # 下面这个是输出层
-    output = tf.nn.relu(output)
-    return output
-
-
-def DNN_Fourier_Gauss(variable_input, Weights, Biases, hiddens, activate_name=None):
-    if activate_name == 'relu':
-        DNN_activation = tf.nn.relu
-    elif activate_name == 'leaky_relu':
-        DNN_activation = tf.nn.leaky_relu(0.2)
-    elif activate_name == 'elu':
-        DNN_activation = tf.nn.elu
-    elif activate_name == 'tanh':
-        DNN_activation = tf.nn.tanh
-    elif activate_name == 'sin':
-        DNN_activation = mysin
-    elif activate_name == 'srelu':
-        DNN_activation = srelu
-    elif activate_name == 'powsin_srelu':
-        DNN_activation = powsin_srelu
-    elif activate_name == 's2relu':
-        DNN_activation = s2relu
-    elif activate_name == 'sin2_srelu':
-        DNN_activation = sin2_srelu
-    elif activate_name == 'slrelu':
-        DNN_activation = slrelu
-    elif activate_name == 'selu':
-        DNN_activation = selu
-    elif activate_name == 'phi':
-        DNN_activation = phi
-
-    layers = len(Weights)  # 得到输入到输出的层数，即隐藏层层数
-    H = variable_input  # 代表输入数据，即输入层
-    W_in = Weights[0]
-    B_in = Biases[0]
-    H = tf.add(tf.matmul(H, W_in), B_in)
-
-    H = 0.5*(tf.sin(H)+tf.cos(H))
-
-    hidden_record = hiddens[0]
-    for k in range(layers - 2):
-        H_pre = H
-        W = Weights[k + 1]
-        B = Biases[k + 1]
-        H = DNN_activation(tf.add(tf.matmul(H, W), B))
-        if hiddens[k + 1] == hidden_record:
-            H = H + H_pre
-        hidden_record = hiddens[k + 1]
-
-    W_out = Weights[-1]
-    B_out = Biases[-1]
-    output = tf.add(tf.matmul(H, W_out), B_out)
-    # 下面这个是输出层
-    # output = gauss(output)
-    output = srelu(output)
     # output = tf.nn.relu(output)
     return output
 

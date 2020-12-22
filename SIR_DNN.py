@@ -102,6 +102,13 @@ def solve_SIR2COVID(R):
     flag2beta = 'WB2beta'
     flag2gamma = 'WB2gamma'
     hidden_layers = R['hidden_layers']
+    # 使用 initialize_NN_xavier这个函数初始化，结果很不好。原因应该是 Bias是uniform初始化导致的
+    # Weight2S, Bias2S = DNN_base.initialize_NN_xavier(input_dim, out_dim, hidden_layers, flag2S)
+    # Weight2I, Bias2I = DNN_base.initialize_NN_xavier(input_dim, out_dim, hidden_layers, flag2I)
+    # Weight2R, Bias2R = DNN_base.initialize_NN_xavier(input_dim, out_dim, hidden_layers, flag2R)
+    # Weight2beta, Bias2beta = DNN_base.initialize_NN_xavier(input_dim, out_dim, hidden_layers, flag2beta)
+    # Weight2gamma, Bias2gamma = DNN_base.initialize_NN_xavier(input_dim, out_dim, hidden_layers, flag2gamma)
+
     Weight2S, Bias2S = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2S)
     Weight2I, Bias2I = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2I)
     Weight2R, Bias2R = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2R)
@@ -126,9 +133,9 @@ def solve_SIR2COVID(R):
                 in_beta = DNN_base.PDE_DNN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
             elif 'PDE_DNN_Fourier' == R['model']:
-                S_NN = DNN_base.DNN_Fourier_Gauss(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
-                I_NN = DNN_base.DNN_Fourier_Gauss(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func)
-                R_NN = DNN_base.DNN_Fourier_Gauss(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
+                S_NN = DNN_base.DNN_Fourier_Base(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
+                I_NN = DNN_base.DNN_Fourier_Base(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func)
+                R_NN = DNN_base.DNN_Fourier_Base(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
                 in_beta = DNN_base.DNN_Fourier_Base(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
                 in_gamma = DNN_base.DNN_Fourier_Base(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
             elif 'PDE_DNN_BN' == str.upper(R['model']):
@@ -138,17 +145,31 @@ def solve_SIR2COVID(R):
                 in_beta = DNN_base.PDE_DNN_BN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_gamma = DNN_base.PDE_DNN_BN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func, is_training=train_opt)
             elif 'PDE_DNN_SCALEOUT' == str.upper(R['model']):
-                freq = np.concatenate(([1], np.arange(1, 20)*10), axis=0)
+                freq = np.concatenate(([1], np.arange(1, 20)), axis=0)
                 S_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
                 I_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
                 R_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
                 in_beta = DNN_base.PDE_DNN_scaleOut(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN_scaleOut(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
-            # beta = tf.exp(in_beta)
-            # gamma = tf.exp(in_gamma)
-            beta = in_beta
-            gamma = in_gamma
+            # Remark: beta, gamma,S_NN.I_NN,R_NN都应该是正的. beta,gamma在0.1--15之间。使用归一化的话S_NN.I_NN,R_NN都在[0,1)范围内
+            beta = tf.exp(in_beta)
+            gamma = tf.exp(in_gamma)
+            # beta = in_beta
+            # gamma = in_gamma
+
+            # S_NN = DNN_base.srelu(S_NN)
+            # I_NN = DNN_base.srelu(I_NN)
+            # R_NN = DNN_base.srelu(R_NN)
+
+            S_NN = DNN_base.gauss(S_NN)
+            I_NN = DNN_base.gauss(I_NN)
+            R_NN = DNN_base.gauss(R_NN)
+
+            # S_NN = tf.nn.relu(S_NN)
+            # I_NN = tf.nn.relu(I_NN)
+            # R_NN = tf.nn.relu(R_NN)
+
             N_NN = S_NN + I_NN + R_NN
 
             dS_NN2t = tf.gradients(S_NN, T_it)[0]
@@ -371,11 +392,11 @@ if __name__ == "__main__":
     if R['activate_stage_penalty'] == 1 or R['activate_stage_penalty'] == 2:
         R['init_penalty2predict_true'] = 2
 
-    R['regular_weight_model'] = 'L0'
+    # R['regular_weight_model'] = 'L0'
     # R['regular_weight_model'] = 'L1'
-    # R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
-    R['regular_weight'] = 0.000             # Regularization parameter for weights
-    # R['regular_weight'] = 0.001           # Regularization parameter for weights
+    R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
+    # R['regular_weight'] = 0.000             # Regularization parameter for weights
+    R['regular_weight'] = 0.001           # Regularization parameter for weights
 
     R['optimizer_name'] = 'Adam'  # 优化器
     R['loss_function'] = 'L2_loss'
