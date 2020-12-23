@@ -138,7 +138,8 @@ def stanh(x):
 
 def gauss(x):
     # return 0.2*tf.exp(-4*x*x)
-    return 0.25*tf.exp(-4 * x * x)
+    # return 0.25*tf.exp(-4 * x * x)
+    return 0.5 * tf.exp(-2 * x * x)
     # return 0.25*tf.exp(-7.5*(x-0.5)*(x-0.5))
 
 
@@ -470,7 +471,7 @@ def DNN_Fourier_Base(variable_input, Weights, Biases, hiddens, activate_name=Non
     if activate_name == 'relu':
         DNN_activation = tf.nn.relu
     elif activate_name == 'leaky_relu':
-        DNN_activation = tf.nn.leaky_relu(0.2)
+        DNN_activation = tf.nn.leaky_relu
     elif activate_name == 'elu':
         DNN_activation = tf.nn.elu
     elif activate_name == 'tanh':

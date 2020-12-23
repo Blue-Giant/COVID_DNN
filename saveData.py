@@ -1,6 +1,12 @@
 import scipy.io as scio
 
 
+def true_value2convid(trueArray, name2Array=None, outPath=None):
+    outFile2data = '%s/%s.mat' % (outPath, str.upper(name2Array))
+    key2mat = name2Array
+    scio.savemat(outFile2data, {key2mat: trueArray})
+
+
 def save_SIR_trainLoss2mat_Covid(loss_sArray, loss_iArray, loss_rArray, loss_nArray, actName=None, outPath=None):
     outFile2data = '%s/Loss2%s.mat' % (outPath, actName)
     key2mat_1 = 'loss_s'

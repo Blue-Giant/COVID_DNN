@@ -331,6 +331,7 @@ def solve_SIR2COVID(R):
         plotData.plotTrain_loss_1act_func(loss_n_all, lossType='loss2n', seedNo=R['seed'], outPath=R['FolderName'],
                                           yaxis_scale=True)
 
+        saveData.true_value2convid(i_obs_test, name2Array='i_true', outPath=R['FolderName'])
         saveData.save_testMSE_REL2mat(test_mse2I_all, test_rel2I_all, actName='Infected', outPath=R['FolderName'])
         plotData.plotTest_MSE_REL(test_mse2I_all, test_rel2I_all, test_epoch, actName='Infected', seedNo=R['seed'],
                                   outPath=R['FolderName'], yaxis_scale=True)
@@ -396,11 +397,12 @@ if __name__ == "__main__":
     # R['regular_weight_model'] = 'L1'
     R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
     # R['regular_weight'] = 0.000             # Regularization parameter for weights
-    R['regular_weight'] = 0.001           # Regularization parameter for weights
+    # R['regular_weight'] = 0.001           # Regularization parameter for weights
+    R['regular_weight'] = 0.0005          # Regularization parameter for weights
 
     R['optimizer_name'] = 'Adam'  # 优化器
-    R['loss_function'] = 'L2_loss'
-    # R['loss_function'] = 'lncosh_loss'
+    # R['loss_function'] = 'L2_loss'
+    R['loss_function'] = 'lncosh_loss'
     if 50000 < R['max_epoch']:
         R['learning_rate'] = 2e-4         # 学习率
         R['lr_decay'] = 5e-5              # 学习率 decay
@@ -430,8 +432,8 @@ if __name__ == "__main__":
 
     # 激活函数的选择
     # R['act_name'] = 'relu'
-    R['act_name'] = 'tanh'
-    # R['act_name'] = 'leaky_relu'
+    # R['act_name'] = 'tanh'
+    R['act_name'] = 'leaky_relu'
     # R['act_name'] = 'srelu'
     # R['act_name'] = 's2relu'
     # R['act_name'] = 'slrelu'

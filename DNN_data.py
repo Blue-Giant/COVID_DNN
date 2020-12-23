@@ -19,13 +19,13 @@ def load_csvData(datafile=None):
 
 
 # 将数据集拆分为训练集合测试集
-def split_csvData2train_test(date_data, data, size2train=50):
+def split_csvData2train_test(date_data, data, size2train=50, normalFactor=10000):
 
     date2train = date_data[0:size2train]
-    data2train = data[0:size2train]
+    data2train = data[0:size2train]/float(normalFactor)
 
     date2test = date_data[size2train:-1]
-    data2test = data[size2train:-1]
+    data2test = data[size2train:-1]/float(normalFactor)
     return date2train, data2train, date2test, data2test
 
 
