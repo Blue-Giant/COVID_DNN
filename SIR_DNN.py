@@ -162,6 +162,10 @@ def solve_SIR2COVID(R):
             # I_NN = DNN_base.srelu(I_NN)
             # R_NN = DNN_base.srelu(R_NN)
 
+            # S_NN = DNN_base.asrelu(S_NN)
+            # I_NN = DNN_base.asrelu(I_NN)
+            # R_NN = DNN_base.asrelu(R_NN)
+            #
             S_NN = DNN_base.gauss(S_NN)
             I_NN = DNN_base.gauss(I_NN)
             R_NN = DNN_base.gauss(R_NN)
@@ -179,7 +183,7 @@ def solve_SIR2COVID(R):
 
             temp_snn2t = -beta*S_NN*I_NN
             temp_inn2t = beta*S_NN*I_NN - gamma * I_NN
-            temp_rnn2t = gamma *I_NN
+            temp_rnn2t = gamma * I_NN
 
             if str.lower(R['loss_function']) == 'l2_loss':
                 # LossS_Net_obs = tf.reduce_mean(tf.square(S_NN - S_observe))
@@ -222,7 +226,7 @@ def solve_SIR2COVID(R):
             Loss2S = Loss2dS + PWB2S
             Loss2I = predict_true_penalty * LossI_Net_obs + Loss2dI + PWB2I
             Loss2R = Loss2dR + PWB2R
-            Loss2All = LossN_Net_obs + Loss2dN
+            Loss2All = predict_true_penalty*LossN_Net_obs + Loss2dN
 
             my_optimizer = tf.train.AdamOptimizer(in_learning_rate)
             train_Loss2S = my_optimizer.minimize(Loss2S, global_step=global_steps)
@@ -252,7 +256,7 @@ def solve_SIR2COVID(R):
         NormalFactor = R['total_population']
 
     if R['total_population'] == 1:
-        ndata2train = np.ones(train_size2batch, dtype=np.float32)*float(9776000)
+        ndata2train = np.ones(train_size2batch, dtype=np.float32)*float(R['total_population'])
     else:
         ndata2train = np.ones(train_size2batch, dtype=np.float32)
 
@@ -319,6 +323,8 @@ def solve_SIR2COVID(R):
                 test_rel2I = test_mse2I / np.mean(np.square(i_obs_test))
                 test_rel2I_all.append(test_rel2I)
 
+                DNN_tools.print_and_log_test_one_epoch(test_mse2I, test_rel2I, log_out=log_fileout)
+
         saveData.save_SIR_trainLoss2mat_Covid(loss_s_all, loss_i_all, loss_r_all, loss_n_all, actName=act_func,
                                               outPath=R['FolderName'])
 
@@ -382,7 +388,8 @@ if __name__ == "__main__":
     R['eqs_name'] = 'SIR'
     R['input_dim'] = 1                    # 输入维数，即问题的维数(几元问题)
     R['output_dim'] = 1                   # 输出维数
-    R['total_population'] = 9776000
+    # R['total_population'] = 9776000
+    R['total_population'] = 10000
     # ------------------------------------  神经网络的设置  ----------------------------------------
     R['size2train'] = 70                  # 训练集的大小
     R['batch_size2train'] = 20            # 训练数据的批大小
@@ -394,9 +401,10 @@ if __name__ == "__main__":
         R['init_penalty2predict_true'] = 2
 
     # R['regular_weight_model'] = 'L0'
+    # R['regular_weight'] = 0.000             # Regularization parameter for weights
+
     # R['regular_weight_model'] = 'L1'
     R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
-    # R['regular_weight'] = 0.000             # Regularization parameter for weights
     # R['regular_weight'] = 0.001           # Regularization parameter for weights
     R['regular_weight'] = 0.0005          # Regularization parameter for weights
 
@@ -433,9 +441,9 @@ if __name__ == "__main__":
     # 激活函数的选择
     # R['act_name'] = 'relu'
     # R['act_name'] = 'tanh'
-    R['act_name'] = 'leaky_relu'
+    # R['act_name'] = 'leaky_relu'
     # R['act_name'] = 'srelu'
-    # R['act_name'] = 's2relu'
+    R['act_name'] = 's2relu'
     # R['act_name'] = 'slrelu'
     # R['act_name'] = 'elu'
     # R['act_name'] = 'selu'

@@ -108,6 +108,10 @@ def srelu(x):
     return tf.nn.relu(1-x)*tf.nn.relu(x)
 
 
+def asrelu(x):   # abs srelu
+    return tf.nn.relu(1-tf.abs(x))*tf.nn.relu(tf.abs(x))
+
+
 def s2relu(x):
     return tf.nn.relu(1-x)*tf.nn.relu(x)*tf.sin(2*np.pi*x)
     # return 1.5*tf.nn.relu(1-x)*tf.nn.relu(x)*tf.sin(2*np.pi*x)
@@ -139,7 +143,7 @@ def stanh(x):
 def gauss(x):
     # return 0.2*tf.exp(-4*x*x)
     # return 0.25*tf.exp(-4 * x * x)
-    return 0.5 * tf.exp(-2 * x * x)
+    return 0.25 * tf.exp(-2 * x * x)
     # return 0.25*tf.exp(-7.5*(x-0.5)*(x-0.5))
 
 
