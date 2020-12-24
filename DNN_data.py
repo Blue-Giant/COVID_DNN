@@ -45,11 +45,18 @@ def randSample_existData(data1, data2, batchsize=1):
 
 
 # 从总体数据集中载入部分数据作为训练集
-def randSample_Normalize_existData(date_data, data2, batchsize=1, normalFactor=1000):
+def randSample_Normalize_existData(date_data, data2, batchsize=1, normalFactor=1000, sampling_opt=None):
     date_temp = []
     data2_temp = []
     data_length = len(date_data)
-    indexes = np.random.randint(data_length, size=batchsize)
+    if str.lower(sampling_opt) == 'random_sample':
+        indexes = np.random.randint(data_length, size=batchsize)
+    elif str.lower(sampling_opt) == 'rand_sample_sort':
+        indexes_temp = np.random.randint(data_length, size=batchsize)
+        indexes = np.sort(indexes_temp)
+    else:
+        index_base = np.random.randint(data_length-batchsize, size=1)
+        indexes = np.arange(index_base, index_base+batchsize)
     for i_index in indexes:
         date_temp .append(float(date_data[i_index]))
         data2_temp .append(float(data2[i_index])/float(normalFactor))
