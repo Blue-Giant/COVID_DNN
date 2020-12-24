@@ -153,10 +153,12 @@ def solve_SIR2COVID(R):
                 in_gamma = DNN_base.PDE_DNN_scaleOut(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
             # Remark: beta, gamma,S_NN.I_NN,R_NN都应该是正的. beta,gamma在0.1--15之间。使用归一化的话S_NN.I_NN,R_NN都在[0,1)范围内
-            beta = tf.exp(in_beta)
-            gamma = tf.exp(in_gamma)
-            # beta = in_beta
-            # gamma = in_gamma
+            # beta = tf.exp(in_beta)
+            # gamma = tf.exp(in_gamma)
+            # beta = tf.abs(in_beta)
+            # gamma = tf.abs(in_gamma)
+            beta = tf.square(in_beta)
+            gamma = tf.square(in_gamma)
 
             # S_NN = DNN_base.srelu(S_NN)
             # I_NN = DNN_base.srelu(I_NN)
@@ -165,14 +167,22 @@ def solve_SIR2COVID(R):
             # S_NN = DNN_base.asrelu(S_NN)
             # I_NN = DNN_base.asrelu(I_NN)
             # R_NN = DNN_base.asrelu(R_NN)
-            #
-            S_NN = DNN_base.gauss(S_NN)
-            I_NN = DNN_base.gauss(I_NN)
-            R_NN = DNN_base.gauss(R_NN)
 
             # S_NN = tf.nn.relu(S_NN)
             # I_NN = tf.nn.relu(I_NN)
             # R_NN = tf.nn.relu(R_NN)
+
+            # S_NN = DNN_base.gauss(S_NN)
+            # I_NN = DNN_base.gauss(I_NN)
+            # R_NN = DNN_base.gauss(R_NN)
+
+            # S_NN = tf.abs(S_NN)
+            # I_NN = tf.abs(I_NN)
+            # R_NN = tf.abs(R_NN)
+
+            S_NN = tf.square(S_NN)
+            I_NN = tf.square(I_NN)
+            R_NN = tf.square(R_NN)
 
             N_NN = S_NN + I_NN + R_NN
 
@@ -390,7 +400,7 @@ if __name__ == "__main__":
     R['input_dim'] = 1                    # 输入维数，即问题的维数(几元问题)
     R['output_dim'] = 1                   # 输出维数
     # R['total_population'] = 9776000
-    R['total_population'] = 10000
+    R['total_population'] = 100000
     # ------------------------------------  神经网络的设置  ----------------------------------------
     R['size2train'] = 70                  # 训练集的大小
     R['batch_size2train'] = 20            # 训练数据的批大小
@@ -442,10 +452,10 @@ if __name__ == "__main__":
 
     # 激活函数的选择
     # R['act_name'] = 'relu'
-    # R['act_name'] = 'tanh'
+    R['act_name'] = 'tanh'
     # R['act_name'] = 'leaky_relu'
     # R['act_name'] = 'srelu'
-    R['act_name'] = 's2relu'
+    # R['act_name'] = 's2relu'
     # R['act_name'] = 'slrelu'
     # R['act_name'] = 'elu'
     # R['act_name'] = 'selu'
