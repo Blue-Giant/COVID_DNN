@@ -697,7 +697,7 @@ def plot_testSolu2convid(solu_arr, name2solu=None, coord_points2test=None, seedN
     if yaxis_scale:
         ax.set_yscale('log')
     plt.legend(fontsize=18)
-    plt.title('solutions ', fontsize=15)
+    plt.title(str(name2solu), fontsize=15)
     fntmp = '%s/%s' % (outPath, str(name2solu))
     DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
 
@@ -731,6 +731,6 @@ def plot_testPara2convid(para_arr, name2para=None, coord_points2test=None, seedN
     if yaxis_scale:
         ax.set_yscale('log')
     plt.legend(fontsize=18)
-    plt.title('solutions ', fontsize=15)
+    plt.title(str(name2para), fontsize=15)
     fntmp = '%s/%s' % (outPath, str(name2para))
     DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
