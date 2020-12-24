@@ -698,7 +698,7 @@ def plot_testSolu2convid(solu_arr, name2solu=None, coord_points2test=None, seedN
         ax.set_yscale('log')
     plt.legend(fontsize=18)
     plt.title('solutions ', fontsize=15)
-    fntmp = '%s/%stest_rel' % (outPath, str(name2solu))
+    fntmp = '%s/%s' % (outPath, str(name2solu))
     DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
 
 
@@ -715,7 +715,7 @@ def plot_testSolus2convid(solu1_arr, solu2_arr, name2solu1=None, name2solu2=None
         ax.set_yscale('log')
     plt.legend(fontsize=18)
     plt.title('solutions ', fontsize=15)
-    fntmp = '%s/%stest_rel' % (outPath, seedNo)
+    fntmp = '%s/%stestSolus' % (outPath, seedNo)
     DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
 
 
@@ -732,5 +732,5 @@ def plot_testPara2convid(para_arr, name2para=None, coord_points2test=None, seedN
         ax.set_yscale('log')
     plt.legend(fontsize=18)
     plt.title('solutions ', fontsize=15)
-    fntmp = '%s/%stest_rel' % (outPath, str(name2para))
+    fntmp = '%s/%s' % (outPath, str(name2para))
     DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)

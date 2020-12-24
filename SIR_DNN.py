@@ -183,7 +183,7 @@ def solve_SIR2COVID(R):
 
             S_NN = tf.square(S_NN)
             I_NN = tf.square(0.5*I_NN)
-            R_NN = tf.square(0.1*R_NN)
+            R_NN = tf.square(0.05*R_NN)
 
             # S_NN = tf.sqrt(tf.square(S_NN))
             # I_NN = tf.sqrt(tf.square(I_NN))
@@ -393,6 +393,8 @@ def solve_SIR2COVID(R):
         plotData.plot_testSolus2convid(i_obs_test, i_nn2test, name2solu1='i_true', name2solu2='i_test',
                                        coord_points2test=test_t_bach, seedNo=R['seed'], outPath=R['FolderName'])
 
+        plotData.plot_testSolu2convid(beta_test, name2solu='beta_test', coord_points2test=test_t_bach,
+                                      outPath=R['FolderName'])
         plotData.plot_testSolu2convid(gamma_test, name2solu='gamma_test', coord_points2test=test_t_bach,
                                       outPath=R['FolderName'])
 
@@ -445,8 +447,8 @@ if __name__ == "__main__":
     R['size2train'] = 70                  # 训练集的大小
     R['batch_size2train'] = 20            # 训练数据的批大小
     R['batch_size2test'] = 10             # 训练数据的批大小
-    # R['opt2sample'] = 'random_sample'
-    R['opt2sample'] = 'rand_sample_sort'
+    R['opt2sample'] = 'random_sample'
+    # R['opt2sample'] = 'rand_sample_sort'
 
     R['init_penalty2predict_true'] = 50   # Regularization parameter for boundary conditions
     R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
