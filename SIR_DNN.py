@@ -272,8 +272,9 @@ def solve_SIR2COVID(R):
         sess.run(tf.global_variables_initializer())
         tmp_lr = learning_rate
         for i_epoch in range(R['max_epoch'] + 1):
-            t_batch, i_obs = DNN_data.randSample_Normalize_existData(train_date, train_data, batchsize=train_size2batch,
-                                                                     normalFactor=NormalFactor)
+            t_batch, i_obs = \
+                DNN_data.randSample_Normalize_existData(train_date, train_data, batchsize=train_size2batch,
+                                                        normalFactor=NormalFactor, sampling_opt=R['opt2sample'])
             n_obs = ndata2train.reshape(train_size2batch, 1)
             tmp_lr = tmp_lr * (1 - lr_decay)
             train_option = True
@@ -394,6 +395,7 @@ if __name__ == "__main__":
     R['size2train'] = 70                  # 训练集的大小
     R['batch_size2train'] = 20            # 训练数据的批大小
     R['batch_size2test'] = 10             # 训练数据的批大小
+    R['opt2sample'] = 'rand_sample_sort'
 
     R['init_penalty2predict_true'] = 50   # Regularization parameter for boundary conditions
     R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
