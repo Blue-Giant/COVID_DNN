@@ -357,6 +357,18 @@ def solve_SIR2COVID(R):
         saveData.save_SIR_testParas2mat_Covid(beta_test, gamma_test, name2para1='beta2test', name2para2='gamma2test',
                                               outPath=R['FolderName'])
 
+        plotData.plot_testSolu2convid(i_obs_test, name2solu='i_true', coord_points2test=test_t_bach,
+                                      outPath=R['FolderName'])
+        plotData.plot_testSolu2convid(s_nn2test, name2solu='s_test', coord_points2test=test_t_bach,
+                                      outPath=R['FolderName'])
+        plotData.plot_testSolu2convid(i_nn2test, name2solu='i_test', coord_points2test=test_t_bach,
+                                      outPath=R['FolderName'])
+        plotData.plot_testSolu2convid(r_nn2test, name2solu='r_test', coord_points2test=test_t_bach,
+                                      outPath=R['FolderName'])
+
+        plotData.plot_testSolus2convid(i_obs_test, i_nn2test, name2solu1='i_true', name2solu2='i_test',
+                                       coord_points2test=test_t_bach, seedNo=R['seed'], outPath=R['FolderName'])
+
 
 if __name__ == "__main__":
     R={}
@@ -400,7 +412,7 @@ if __name__ == "__main__":
     R['input_dim'] = 1                    # 输入维数，即问题的维数(几元问题)
     R['output_dim'] = 1                   # 输出维数
     # R['total_population'] = 9776000
-    R['total_population'] = 100000
+    R['total_population'] = 1000000
     # ------------------------------------  神经网络的设置  ----------------------------------------
     R['size2train'] = 70                  # 训练集的大小
     R['batch_size2train'] = 20            # 训练数据的批大小

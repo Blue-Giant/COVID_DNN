@@ -380,7 +380,7 @@ def plotTest_MSEs_RELs_3act_funcs(mse2data1, mse2data2, mse2data3, rel2data1, re
 
 
 def plot_2solutions2test(exact_solu2test, predict_solu2test,  coord_points2test=None,
-                         batch_size2test=1000, seedNo=1000, outPath=None, subfig_type=1):
+                         batch_size2test=1000, seedNo=1000, outPath=None, subfig_type=0):
     if subfig_type == 1:
         plt.figure(figsize=(16, 10), dpi=98)
         fig, ax = plt.subplots(1, 1)  # fig, ax = plt.subplots(a,b)用来控制子图个数：a为行数，b为列数。
@@ -683,3 +683,46 @@ def plot_Hot_point_wise_err(point_wise_err, size_vec2mat=20, actName=None, seedN
 
     fntmp = '%s/%spErr_%s' % (outPath, seedNo, actName)
     DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
+
+
+def plot_testSolu2convid(solu_arr, name2solu=None, coord_points2test=None, seedNo=1000, outPath=None):
+    fig11 = plt.figure(figsize=(9, 6.5))
+    ax = plt.gca()
+    ax.plot(coord_points2test, solu_arr, 'b-.', label=str(name2solu))
+    # box = ax.get_position()
+    # ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
+    ax.legend(loc='center', bbox_to_anchor=(0.9, 1.05), ncol=1, fontsize=15)
+    ax.set_xlabel('day', fontsize=18)
+    ax.set_ylabel(str(name2solu), fontsize=18)
+    fntmp = '%s/solu2%s' % (outPath, str(name2solu))
+    DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
+
+
+def plot_testSolus2convid(solu1_arr, solu2_arr, name2solu1=None, name2solu2=None,
+                          coord_points2test=None, seedNo=1000, outPath=None, xaxis_scale=False, yaxis_scale=False):
+    plt.figure(figsize=(10, 8))
+    ax = plt.gca()
+    plt.plot(coord_points2test, solu1_arr, 'r-.', label=str(name2solu1))
+    plt.plot(coord_points2test, solu2_arr, 'b:', label=str(name2solu2))
+    plt.xlabel('epoch/1000', fontsize=18)
+    # plt.ylabel('L2error', fontsize=18)
+    if xaxis_scale:
+        ax.set_yscale('log')
+    if yaxis_scale:
+        ax.set_yscale('log')
+    plt.legend(fontsize=18)
+    plt.title('solutions ', fontsize=15)
+    fntmp = '%s/%stest_rel' % (outPath, seedNo)
+    DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
+
+    # fig11 = plt.figure(figsize=(9, 6.5))
+    # ax = plt.gca()
+    # ax.plot(coord_points2test, solu1_arr, 'b-.', label=str(name2solu1))
+    # ax.plot(coord_points2test, solu2_arr, 'r:', label=str(name2solu2))
+    # # box = ax.get_position()
+    # # ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
+    # ax.legend(loc='center', bbox_to_anchor=(0.9, 1.05), ncol=2, fontsize=15)
+    # ax.set_xlabel('day', fontsize=14)
+    # ax.set_ylabel('solutions', fontsize=14)
+    # fntmp = '%s/%ssolu2test' % (outPath, seedNo)
+    # DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
