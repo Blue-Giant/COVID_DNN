@@ -41,10 +41,10 @@ def log_string(out_str, log_out):
     log_out.flush()                # 清空缓存区
     # flush() 方法是用来刷新缓冲区的，即将缓冲区中的数据立刻写入文件，同时清空缓冲区，不需要是被动的等待输出缓冲区写入。
     # 一般情况下，文件关闭后会自动刷新缓冲区，但有时你需要在关闭前刷新它，这时就可以使用 flush() 方法。
-	
 
-def print_and_log_train_one_epoch(i_epoch, run_time, tmp_lr, temp_penalty_bd, pwb, loss_it_tmp,
-                                                  loss_bd_tmp, loss_tmp, train_mse_tmp, train_res_tmp, log_out=None):
+
+def print_and_log_train_one_epoch(i_epoch, run_time, tmp_lr, temp_penalty_bd, pwb, loss_it_tmp, loss_bd_tmp,
+                                  loss_tmp, train_mse_tmp, train_res_tmp, log_out=None):
     # 将运行结果打印出来
     print('train epoch: %d, time: %.3f' % (i_epoch, run_time))
     print('learning rate: %f' % tmp_lr)

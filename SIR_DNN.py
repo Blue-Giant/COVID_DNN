@@ -84,6 +84,9 @@ def solve_SIR2COVID(R):
     log_fileout = open(os.path.join(log_out_path, 'log_train.txt'), 'w')  # 在这个路径下创建并打开一个可写的 log_train.txt文件
     dictionary_out2file(R, log_fileout)
 
+    log2trianSolus = open(os.path.join(log_out_path, 'train_Solus.txt'), 'w')  # 在这个路径下创建并打开一个可写的 log_train.txt文件
+    log2testSolus = open(os.path.join(log_out_path, 'test_Solus.txt'), 'w')  # 在这个路径下创建并打开一个可写的 log_train.txt文件
+
     trainSet_szie = R['size2train']
     train_size2batch = R['batch_size2train']
     test_size2batch = R['batch_size2test']
@@ -123,8 +126,6 @@ def solve_SIR2COVID(R):
             N_observe = tf.placeholder(tf.float32, name='N_observe', shape=[None, out_dim])
             predict_true_penalty = tf.placeholder_with_default(input=1e3, shape=[], name='bd_p')
             in_learning_rate = tf.placeholder_with_default(input=1e-5, shape=[], name='lr')
-            # in_beta = tf.placeholder_with_default(input=1e-5, shape=[], name='beta')
-            # in_gamma = tf.placeholder_with_default(input=1e-5, shape=[], name='lr')
             train_opt = tf.placeholder_with_default(input=True, shape=[], name='train_opt')
             if 'PDE_DNN' == str.upper(R['model']):
                 S_NN = DNN_base.PDE_DNN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
@@ -153,12 +154,16 @@ def solve_SIR2COVID(R):
                 in_gamma = DNN_base.PDE_DNN_scaleOut(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
             # Remark: beta, gamma,S_NN.I_NN,R_NN都应该是正的. beta,gamma在0.1--15之间。使用归一化的话S_NN.I_NN,R_NN都在[0,1)范围内
+            # beta = tf.nn.relu(in_beta)
+            # gamma = tf.nn.relu(in_gamma)
             # beta = tf.exp(in_beta)
             # gamma = tf.exp(in_gamma)
             # beta = tf.abs(in_beta)
             # gamma = tf.abs(in_gamma)
             beta = tf.square(in_beta)
             gamma = tf.square(in_gamma)
+            # beta = tf.sqrt(tf.square(in_beta))
+            # gamma = tf.sqrt(tf.square(in_gamma))
 
             # S_NN = DNN_base.srelu(S_NN)
             # I_NN = DNN_base.srelu(I_NN)
@@ -172,17 +177,21 @@ def solve_SIR2COVID(R):
             # I_NN = tf.nn.relu(I_NN)
             # R_NN = tf.nn.relu(R_NN)
 
-            # S_NN = DNN_base.gauss(S_NN)
-            # I_NN = DNN_base.gauss(I_NN)
-            # R_NN = DNN_base.gauss(R_NN)
-
             # S_NN = tf.abs(S_NN)
             # I_NN = tf.abs(I_NN)
             # R_NN = tf.abs(R_NN)
 
             S_NN = tf.square(S_NN)
-            I_NN = tf.square(I_NN)
-            R_NN = tf.square(R_NN)
+            I_NN = tf.square(0.5*I_NN)
+            R_NN = tf.square(0.1*R_NN)
+
+            # S_NN = tf.sqrt(tf.square(S_NN))
+            # I_NN = tf.sqrt(tf.square(I_NN))
+            # R_NN = tf.sqrt(tf.square(R_NN))
+
+            # S_NN = DNN_base.gauss(S_NN)
+            # I_NN = DNN_base.gauss(I_NN)
+            # R_NN = DNN_base.gauss(R_NN)
 
             N_NN = S_NN + I_NN + R_NN
 
@@ -273,6 +282,9 @@ def solve_SIR2COVID(R):
     # 对于时间数据来说，验证模型的合理性，要用连续的时间数据验证
     test_t_bach = DNN_data.sample_testDays_serially(test_date, test_size2batch)
     i_obs_test = DNN_data.sample_testData_serially(test_data, test_size2batch, normalFactor=NormalFactor)
+    print('The test data about i:\n', str(np.transpose(i_obs_test)))
+    print('\n')
+    DNN_tools.log_string('The test data about i:\n%s\n' % str(np.transpose(i_obs_test)), log_fileout)
 
     # ConfigProto 加上allow_soft_placement=True就可以使用 gpu 了
     config = tf.ConfigProto(allow_soft_placement=True)  # 创建sess的时候对sess进行参数配置
@@ -322,6 +334,13 @@ def solve_SIR2COVID(R):
             loss_n_all.append(loss_n)
 
             if i_epoch % 1000 == 0:
+                s_nn2train, i_nn2train, r_nn2train = sess.run(
+                    [S_NN, I_NN, R_NN], feed_dict={T_it: t_batch, I_observe: i_obs, N_observe: n_obs})
+                DNN_tools.log_string('--------------------The epoch---------------------: %s\n' % str(i_epoch), log2trianSolus)
+                DNN_tools.log_string('The train result for s:\n%s\n' % str(np.transpose(s_nn2train)), log2trianSolus)
+                DNN_tools.log_string('The train result for i:\n%s\n' % str(np.transpose(i_nn2train)), log2trianSolus)
+                DNN_tools.log_string('The train result for r:\n%s\n\n' % str(np.transpose(r_nn2train)), log2trianSolus)
+
                 print_and_log2train(i_epoch, time.time() - t0, tmp_lr, temp_penalty_pt, pwb2s, pwb2i, pwb2r, loss_s,
                                     loss_i, loss_r, loss_n, log_out=log_fileout)
                 test_epoch.append(i_epoch / 1000)
@@ -335,6 +354,11 @@ def solve_SIR2COVID(R):
                 test_rel2I_all.append(test_rel2I)
 
                 DNN_tools.print_and_log_test_one_epoch(test_mse2I, test_rel2I, log_out=log_fileout)
+
+                DNN_tools.log_string('------------------The epoch----------------------: %s\n' % str(i_epoch), log2testSolus)
+                DNN_tools.log_string('The test result for s:\n%s\n' % str(np.transpose(s_nn2test)), log2testSolus)
+                DNN_tools.log_string('The test result for i:\n%s\n' % str(np.transpose(i_nn2test)), log2testSolus)
+                DNN_tools.log_string('The test result for r:\n%s\n\n' % str(np.transpose(r_nn2test)), log2testSolus)
 
         saveData.save_SIR_trainLoss2mat_Covid(loss_s_all, loss_i_all, loss_r_all, loss_n_all, actName=act_func,
                                               outPath=R['FolderName'])
@@ -368,6 +392,9 @@ def solve_SIR2COVID(R):
 
         plotData.plot_testSolus2convid(i_obs_test, i_nn2test, name2solu1='i_true', name2solu2='i_test',
                                        coord_points2test=test_t_bach, seedNo=R['seed'], outPath=R['FolderName'])
+
+        plotData.plot_testSolu2convid(gamma_test, name2solu='gamma_test', coord_points2test=test_t_bach,
+                                      outPath=R['FolderName'])
 
 
 if __name__ == "__main__":
@@ -411,12 +438,14 @@ if __name__ == "__main__":
     R['eqs_name'] = 'SIR'
     R['input_dim'] = 1                    # 输入维数，即问题的维数(几元问题)
     R['output_dim'] = 1                   # 输出维数
-    # R['total_population'] = 9776000
-    R['total_population'] = 1000000
+    R['total_population'] = 9776000
+    # R['total_population'] = 100000
+    # R['total_population'] = 1000000
     # ------------------------------------  神经网络的设置  ----------------------------------------
     R['size2train'] = 70                  # 训练集的大小
     R['batch_size2train'] = 20            # 训练数据的批大小
     R['batch_size2test'] = 10             # 训练数据的批大小
+    # R['opt2sample'] = 'random_sample'
     R['opt2sample'] = 'rand_sample_sort'
 
     R['init_penalty2predict_true'] = 50   # Regularization parameter for boundary conditions
@@ -433,8 +462,8 @@ if __name__ == "__main__":
     R['regular_weight'] = 0.0005          # Regularization parameter for weights
 
     R['optimizer_name'] = 'Adam'  # 优化器
-    # R['loss_function'] = 'L2_loss'
-    R['loss_function'] = 'lncosh_loss'
+    R['loss_function'] = 'L2_loss'
+    # R['loss_function'] = 'lncosh_loss'
     if 50000 < R['max_epoch']:
         R['learning_rate'] = 2e-4         # 学习率
         R['lr_decay'] = 5e-5              # 学习率 decay

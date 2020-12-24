@@ -685,16 +685,20 @@ def plot_Hot_point_wise_err(point_wise_err, size_vec2mat=20, actName=None, seedN
     DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
 
 
-def plot_testSolu2convid(solu_arr, name2solu=None, coord_points2test=None, seedNo=1000, outPath=None):
-    fig11 = plt.figure(figsize=(9, 6.5))
+def plot_testSolu2convid(solu_arr, name2solu=None, coord_points2test=None, seedNo=1000, outPath=None, xaxis_scale=False,
+                         yaxis_scale=False):
+    plt.figure(figsize=(10, 8))
     ax = plt.gca()
-    ax.plot(coord_points2test, solu_arr, 'b-.', label=str(name2solu))
-    # box = ax.get_position()
-    # ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
-    ax.legend(loc='center', bbox_to_anchor=(0.9, 1.05), ncol=1, fontsize=15)
-    ax.set_xlabel('day', fontsize=18)
-    ax.set_ylabel(str(name2solu), fontsize=18)
-    fntmp = '%s/solu2%s' % (outPath, str(name2solu))
+    plt.plot(coord_points2test, solu_arr, 'r-.', label=str(name2solu))
+    plt.xlabel('day', fontsize=18)
+    plt.ylabel(str(name2solu), fontsize=18)
+    if xaxis_scale:
+        ax.set_yscale('log')
+    if yaxis_scale:
+        ax.set_yscale('log')
+    plt.legend(fontsize=18)
+    plt.title('solutions ', fontsize=15)
+    fntmp = '%s/%stest_rel' % (outPath, str(name2solu))
     DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
 
 
@@ -704,8 +708,7 @@ def plot_testSolus2convid(solu1_arr, solu2_arr, name2solu1=None, name2solu2=None
     ax = plt.gca()
     plt.plot(coord_points2test, solu1_arr, 'r-.', label=str(name2solu1))
     plt.plot(coord_points2test, solu2_arr, 'b:', label=str(name2solu2))
-    plt.xlabel('epoch/1000', fontsize=18)
-    # plt.ylabel('L2error', fontsize=18)
+    plt.xlabel('day', fontsize=18)
     if xaxis_scale:
         ax.set_yscale('log')
     if yaxis_scale:
@@ -715,14 +718,19 @@ def plot_testSolus2convid(solu1_arr, solu2_arr, name2solu1=None, name2solu2=None
     fntmp = '%s/%stest_rel' % (outPath, seedNo)
     DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
 
-    # fig11 = plt.figure(figsize=(9, 6.5))
-    # ax = plt.gca()
-    # ax.plot(coord_points2test, solu1_arr, 'b-.', label=str(name2solu1))
-    # ax.plot(coord_points2test, solu2_arr, 'r:', label=str(name2solu2))
-    # # box = ax.get_position()
-    # # ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
-    # ax.legend(loc='center', bbox_to_anchor=(0.9, 1.05), ncol=2, fontsize=15)
-    # ax.set_xlabel('day', fontsize=14)
-    # ax.set_ylabel('solutions', fontsize=14)
-    # fntmp = '%s/%ssolu2test' % (outPath, seedNo)
-    # DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)
+
+def plot_testPara2convid(para_arr, name2para=None, coord_points2test=None, seedNo=1000, outPath=None, xaxis_scale=False,
+                         yaxis_scale=False):
+    plt.figure(figsize=(10, 8))
+    ax = plt.gca()
+    plt.plot(coord_points2test, para_arr, 'r-.', label=str(name2para))
+    plt.xlabel('day', fontsize=18)
+    plt.ylabel(str(name2para), fontsize=18)
+    if xaxis_scale:
+        ax.set_yscale('log')
+    if yaxis_scale:
+        ax.set_yscale('log')
+    plt.legend(fontsize=18)
+    plt.title('solutions ', fontsize=15)
+    fntmp = '%s/%stest_rel' % (outPath, str(name2para))
+    DNN_tools.mySaveFig(plt, fntmp, ax=ax, isax=1, iseps=0)

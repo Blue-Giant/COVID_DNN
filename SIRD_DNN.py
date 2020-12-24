@@ -123,13 +123,13 @@ def solve_SIRD2COVID(R):
                 in_beta = DNN_base.PDE_DNN_BN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_gamma = DNN_base.PDE_DNN_BN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func, is_training=train_opt)
             elif 'PDE_DNN_SCALE' == str.upper(R['model']):
-                freq = np.concatenate(([1], np.arange(1, 100 - 1)), axis=0)
-                S_NN = DNN_base.PDE_DNN_scale(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
-                I_NN = DNN_base.PDE_DNN_scale(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
-                R_NN = DNN_base.PDE_DNN_scale(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
-                D_NN = DNN_base.PDE_DNN_scale(T_it, Weight2D, Bias2D, hidden_layers, freq, activate_name=act_func)
-                in_beta = DNN_base.PDE_DNN_scale(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
-                in_gamma = DNN_base.PDE_DNN_scale(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
+                freq = np.concatenate(([1], np.arange(1, 20)*10), axis=0)
+                S_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
+                I_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
+                R_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
+                D_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2D, Bias2D, hidden_layers, freq, activate_name=act_func)
+                in_beta = DNN_base.PDE_DNN_scaleOut(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
+                in_gamma = DNN_base.PDE_DNN_scaleOut(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
             beta = tf.exp(in_beta)
             gamma = tf.exp(in_gamma)
@@ -354,9 +354,9 @@ if __name__ == "__main__":
     # R['hidden_layers'] = (1000, 500, 400, 300, 300, 200, 100, 100)
 
     # 网络模型的选择
-    R['model'] = 'PDE_DNN'
+    # R['model'] = 'PDE_DNN'
     # R['model'] = 'PDE_DNN_BN'
-    # R['model'] = 'PDE_DNN_scale'
+    R['model'] = 'PDE_DNN_scaleOut'
 
     # 激活函数的选择
     # R['act_name'] = 'relu'
