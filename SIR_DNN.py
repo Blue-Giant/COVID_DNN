@@ -86,6 +86,9 @@ def solve_SIR2COVID(R):
 
     log2trianSolus = open(os.path.join(log_out_path, 'train_Solus.txt'), 'w')  # 在这个路径下创建并打开一个可写的 log_train.txt文件
     log2testSolus = open(os.path.join(log_out_path, 'test_Solus.txt'), 'w')  # 在这个路径下创建并打开一个可写的 log_train.txt文件
+    log2testSolus2 = open(os.path.join(log_out_path, 'test_Solus_temp.txt'), 'w')  # 在这个路径下创建并打开一个可写的 log_train.txt文件
+
+    log2testParas = open(os.path.join(log_out_path, 'test_Paras.txt'), 'w')  # 在这个路径下创建并打开一个可写的 log_train.txt文件
 
     trainSet_szie = R['size2train']
     train_size2batch = R['batch_size2train']
@@ -128,70 +131,78 @@ def solve_SIR2COVID(R):
             in_learning_rate = tf.placeholder_with_default(input=1e-5, shape=[], name='lr')
             train_opt = tf.placeholder_with_default(input=True, shape=[], name='train_opt')
             if 'PDE_DNN' == str.upper(R['model']):
-                S_NN = DNN_base.PDE_DNN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
-                I_NN = DNN_base.PDE_DNN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func)
-                R_NN = DNN_base.PDE_DNN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
+                S_NN_temp = DNN_base.PDE_DNN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
+                I_NN_temp = DNN_base.PDE_DNN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func)
+                R_NN_temp = DNN_base.PDE_DNN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
                 in_beta = DNN_base.PDE_DNN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
             elif 'PDE_DNN_Fourier' == R['model']:
-                S_NN = DNN_base.DNN_Fourier_Base(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
-                I_NN = DNN_base.DNN_Fourier_Base(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func)
-                R_NN = DNN_base.DNN_Fourier_Base(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
+                S_NN_temp = DNN_base.DNN_Fourier_Base(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func)
+                I_NN_temp = DNN_base.DNN_Fourier_Base(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func)
+                R_NN_temp = DNN_base.DNN_Fourier_Base(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
                 in_beta = DNN_base.DNN_Fourier_Base(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
                 in_gamma = DNN_base.DNN_Fourier_Base(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
             elif 'PDE_DNN_BN' == str.upper(R['model']):
-                S_NN = DNN_base.PDE_DNN_BN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func, is_training=train_opt)
-                I_NN = DNN_base.PDE_DNN_BN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func, is_training=train_opt)
-                R_NN = DNN_base.PDE_DNN_BN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func, is_training=train_opt)
+                S_NN_temp = DNN_base.PDE_DNN_BN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func, is_training=train_opt)
+                I_NN_temp = DNN_base.PDE_DNN_BN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func, is_training=train_opt)
+                R_NN_temp = DNN_base.PDE_DNN_BN(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_beta = DNN_base.PDE_DNN_BN(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func, is_training=train_opt)
                 in_gamma = DNN_base.PDE_DNN_BN(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func, is_training=train_opt)
             elif 'PDE_DNN_SCALEOUT' == str.upper(R['model']):
                 freq = np.concatenate(([1], np.arange(1, 20)), axis=0)
-                S_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
-                I_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
-                R_NN = DNN_base.PDE_DNN_scaleOut(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
+                S_NN_temp = DNN_base.PDE_DNN_scaleOut(T_it, Weight2S, Bias2S, hidden_layers, freq, activate_name=act_func)
+                I_NN_temp = DNN_base.PDE_DNN_scaleOut(T_it, Weight2I, Bias2I, hidden_layers, freq, activate_name=act_func)
+                R_NN_temp = DNN_base.PDE_DNN_scaleOut(T_it, Weight2R, Bias2R, hidden_layers, freq, activate_name=act_func)
                 in_beta = DNN_base.PDE_DNN_scaleOut(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN_scaleOut(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
             # Remark: beta, gamma,S_NN.I_NN,R_NN都应该是正的. beta,gamma在0.1--15之间。使用归一化的话S_NN.I_NN,R_NN都在[0,1)范围内
             # beta = tf.nn.relu(in_beta)
             # gamma = tf.nn.relu(in_gamma)
-            # beta = tf.exp(in_beta)
-            # gamma = tf.exp(in_gamma)
+            beta = tf.exp(in_beta)
+            gamma = tf.exp(in_gamma)
             # beta = tf.abs(in_beta)
             # gamma = tf.abs(in_gamma)
-            beta = tf.square(in_beta)
-            gamma = tf.square(in_gamma)
+            # beta = tf.square(in_beta)
+            # gamma = tf.square(in_gamma)
             # beta = tf.sqrt(tf.square(in_beta))
             # gamma = tf.sqrt(tf.square(in_gamma))
 
-            # S_NN = DNN_base.srelu(S_NN)
-            # I_NN = DNN_base.srelu(I_NN)
-            # R_NN = DNN_base.srelu(R_NN)
+            # S_NN = DNN_base.srelu(S_NN_temp)
+            # I_NN = DNN_base.srelu(I_NN_temp)
+            # R_NN = DNN_base.srelu(R_NN_temp)
 
-            # S_NN = DNN_base.asrelu(S_NN)
-            # I_NN = DNN_base.asrelu(I_NN)
-            # R_NN = DNN_base.asrelu(R_NN)
+            # S_NN = DNN_base.asrelu(S_NN_temp)
+            # I_NN = DNN_base.asrelu(I_NN_temp)
+            # R_NN = DNN_base.asrelu(R_NN_temp)
 
-            # S_NN = tf.nn.relu(S_NN)
-            # I_NN = tf.nn.relu(I_NN)
-            # R_NN = tf.nn.relu(R_NN)
+            # S_NN = tf.nn.relu(S_NN_temp)
+            # I_NN = tf.nn.relu(0.1*I_NN_temp)
+            # R_NN = tf.nn.relu(0.01*R_NN_temp)
 
-            # S_NN = tf.abs(S_NN)
-            # I_NN = tf.abs(I_NN)
-            # R_NN = tf.abs(R_NN)
+            # S_NN = tf.abs(S_NN_temp)
+            # I_NN = tf.abs(I_NN_temp)
+            # R_NN = tf.abs(R_NN_temp)
 
-            S_NN = tf.square(S_NN)
-            I_NN = tf.square(0.5*I_NN)
-            R_NN = tf.square(0.05*R_NN)
+            # S_NN = DNN_base.gauss(S_NN_temp)
+            # I_NN = tf.square(I_NN_temp)
+            # R_NN = tf.square(R_NN_temp)
 
-            # S_NN = tf.sqrt(tf.square(S_NN))
-            # I_NN = tf.sqrt(tf.square(I_NN))
-            # R_NN = tf.sqrt(tf.square(R_NN))
+            # S_NN = tf.nn.sigmoid(S_NN_temp)
+            # I_NN = tf.nn.sigmoid(I_NN_temp)
+            # R_NN = DNN_base.gauss(R_NN_temp)
 
-            # S_NN = DNN_base.gauss(S_NN)
-            # I_NN = DNN_base.gauss(I_NN)
-            # R_NN = DNN_base.gauss(R_NN)
+            S_NN = DNN_base.gauss(S_NN_temp)
+            I_NN = tf.nn.sigmoid(I_NN_temp)
+            R_NN = tf.nn.sigmoid(R_NN_temp)
+
+            # S_NN = tf.sqrt(tf.square(S_NN_temp))
+            # I_NN = tf.sqrt(tf.square(I_NN_temp))
+            # R_NN = tf.sqrt(tf.square(R_NN_temp))
+
+            # S_NN = DNN_base.gauss(S_NN_temp)
+            # I_NN = DNN_base.gauss(I_NN_temp)
+            # R_NN = DNN_base.gauss(R_NN_temp)
 
             N_NN = S_NN + I_NN + R_NN
 
@@ -355,10 +366,25 @@ def solve_SIR2COVID(R):
 
                 DNN_tools.print_and_log_test_one_epoch(test_mse2I, test_rel2I, log_out=log_fileout)
 
+                # 以下代码为输出训练过程中 S_NN, I_NN, R_NN, beta, gamma 的测试结果
                 DNN_tools.log_string('------------------The epoch----------------------: %s\n' % str(i_epoch), log2testSolus)
                 DNN_tools.log_string('The test result for s:\n%s\n' % str(np.transpose(s_nn2test)), log2testSolus)
                 DNN_tools.log_string('The test result for i:\n%s\n' % str(np.transpose(i_nn2test)), log2testSolus)
                 DNN_tools.log_string('The test result for r:\n%s\n\n' % str(np.transpose(r_nn2test)), log2testSolus)
+
+                # --------以下代码为输出训练过程中 S_NN_temp, I_NN_temp, R_NN_temp, in_beta, in_gamma 的测试结果-------------
+                s_nn_temp2test, i_nn_temp2test, r_nn_temp2test, in_beta_test, in_gamma_test = sess.run(
+                    [S_NN_temp, I_NN_temp, R_NN_temp, in_beta, in_gamma],
+                    feed_dict={T_it: test_t_bach, train_opt: train_option})
+
+                DNN_tools.log_string('------------------The epoch----------------------: %s\n' % str(i_epoch),log2testSolus2)
+                DNN_tools.log_string('The test result for s_temp:\n%s\n' % str(np.transpose(s_nn_temp2test)), log2testSolus2)
+                DNN_tools.log_string('The test result for i_temp:\n%s\n' % str(np.transpose(i_nn_temp2test)), log2testSolus2)
+                DNN_tools.log_string('The test result for r_temp:\n%s\n\n' % str(np.transpose(r_nn_temp2test)), log2testSolus2)
+
+                DNN_tools.log_string('------------------The epoch----------------------: %s\n' % str(i_epoch), log2testParas)
+                DNN_tools.log_string('The test result for in_beta:\n%s\n' % str(np.transpose(in_beta_test)), log2testParas)
+                DNN_tools.log_string('The test result for in_gamma:\n%s\n' % str(np.transpose(in_gamma_test)), log2testParas)
 
         saveData.save_SIR_trainLoss2mat_Covid(loss_s_all, loss_i_all, loss_r_all, loss_n_all, actName=act_func,
                                               outPath=R['FolderName'])
