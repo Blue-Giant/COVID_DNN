@@ -114,19 +114,25 @@ def solve_SIR2COVID(R):
     # Weight2R, Bias2R = DNN_base.initialize_NN_xavier(input_dim, out_dim, hidden_layers, flag2R)
     # Weight2beta, Bias2beta = DNN_base.initialize_NN_xavier(input_dim, out_dim, hidden_layers, flag2beta)
     # Weight2gamma, Bias2gamma = DNN_base.initialize_NN_xavier(input_dim, out_dim, hidden_layers, flag2gamma)
-
-    Weight2S, Bias2S = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2S)
-    Weight2I, Bias2I = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2I)
-    Weight2R, Bias2R = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2R)
-    Weight2beta, Bias2beta = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2beta)
-    Weight2gamma, Bias2gamma = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2gamma)
+    if R['model'] == 'DNN_Cos_C_Sin_Base':
+        Weight2S, Bias2S = DNN_base.initialize_NN_random_normal2_CS(input_dim, out_dim, hidden_layers, flag2S)
+        Weight2I, Bias2I = DNN_base.initialize_NN_random_normal2_CS(input_dim, out_dim, hidden_layers, flag2I)
+        Weight2R, Bias2R = DNN_base.initialize_NN_random_normal2_CS(input_dim, out_dim, hidden_layers, flag2R)
+        Weight2beta, Bias2beta = DNN_base.initialize_NN_random_normal2_CS(input_dim, out_dim, hidden_layers, flag2beta)
+        Weight2gamma, Bias2gamma = DNN_base.initialize_NN_random_normal2_CS(input_dim, out_dim, hidden_layers, flag2gamma)
+    else:
+        Weight2S, Bias2S = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2S)
+        Weight2I, Bias2I = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2I)
+        Weight2R, Bias2R = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2R)
+        Weight2beta, Bias2beta = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2beta)
+        Weight2gamma, Bias2gamma = DNN_base.initialize_NN_random_normal2(input_dim, out_dim, hidden_layers, flag2gamma)
 
     global_steps = tf.Variable(0, trainable=False)
     with tf.device('/gpu:%s' % (R['gpuNo'])):
         with tf.variable_scope('vscope', reuse=tf.AUTO_REUSE):
-            T_it = tf.placeholder(tf.float32, name='T_it', shape=[None, out_dim])
-            I_observe = tf.placeholder(tf.float32, name='I_observe', shape=[None, out_dim])
-            N_observe = tf.placeholder(tf.float32, name='N_observe', shape=[None, out_dim])
+            T_it = tf.placeholder(tf.float32, name='T_it', shape=[None, input_dim])
+            I_observe = tf.placeholder(tf.float32, name='I_observe', shape=[None, input_dim])
+            N_observe = tf.placeholder(tf.float32, name='N_observe', shape=[None, input_dim])
             predict_true_penalty = tf.placeholder_with_default(input=1e3, shape=[], name='bd_p')
             in_learning_rate = tf.placeholder_with_default(input=1e-5, shape=[], name='lr')
             train_opt = tf.placeholder_with_default(input=True, shape=[], name='train_opt')
@@ -142,6 +148,13 @@ def solve_SIR2COVID(R):
                 R_NN_temp = DNN_base.DNN_Fourier_Base(T_it, Weight2R, Bias2R, hidden_layers, activate_name=act_func)
                 in_beta = DNN_base.DNN_Fourier_Base(T_it, Weight2beta, Bias2beta, hidden_layers, activate_name=act_func)
                 in_gamma = DNN_base.DNN_Fourier_Base(T_it, Weight2gamma, Bias2gamma, hidden_layers, activate_name=act_func)
+            elif 'DNN_Cos_C_Sin_Base' == R['model']:
+                freq = [1]
+                S_NN_temp = DNN_base.DNN_Cos_C_Sin_Base(T_it, Weight2S, Bias2S, hidden_layers, freq_frag=freq, activate_name=act_func)
+                I_NN_temp = DNN_base.DNN_Cos_C_Sin_Base(T_it, Weight2I, Bias2I, hidden_layers, freq_frag=freq, activate_name=act_func)
+                R_NN_temp = DNN_base.DNN_Cos_C_Sin_Base(T_it, Weight2R, Bias2R, hidden_layers, freq_frag=freq, activate_name=act_func)
+                in_beta = DNN_base.DNN_Cos_C_Sin_Base(T_it, Weight2beta, Bias2beta, hidden_layers, freq_frag=freq, activate_name=act_func)
+                in_gamma = DNN_base.DNN_Cos_C_Sin_Base(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq_frag=freq, activate_name=act_func)
             elif 'PDE_DNN_BN' == str.upper(R['model']):
                 S_NN_temp = DNN_base.PDE_DNN_BN(T_it, Weight2S, Bias2S, hidden_layers, activate_name=act_func, is_training=train_opt)
                 I_NN_temp = DNN_base.PDE_DNN_BN(T_it, Weight2I, Bias2I, hidden_layers, activate_name=act_func, is_training=train_opt)
@@ -156,17 +169,19 @@ def solve_SIR2COVID(R):
                 in_beta = DNN_base.PDE_DNN_scaleOut(T_it, Weight2beta, Bias2beta, hidden_layers, freq, activate_name=act_func)
                 in_gamma = DNN_base.PDE_DNN_scaleOut(T_it, Weight2gamma, Bias2gamma, hidden_layers, freq, activate_name=act_func)
 
-            # Remark: beta, gamma,S_NN.I_NN,R_NN都应该是正的. beta,gamma在0.1--15之间。使用归一化的话S_NN.I_NN,R_NN都在[0,1)范围内
+            # Remark: beta, gamma,S_NN.I_NN,R_NN都应该是正的. beta.1--15之间，gamma在(0,1）使用归一化的话S_NN.I_NN,R_NN都在[0,1)范围内
             # beta = tf.nn.relu(in_beta)
             # gamma = tf.nn.relu(in_gamma)
-            beta = tf.exp(in_beta)
-            gamma = tf.exp(in_gamma)
+            # beta = tf.exp(in_beta)
+            # gamma = tf.exp(in_gamma)
             # beta = tf.abs(in_beta)
             # gamma = tf.abs(in_gamma)
             # beta = tf.square(in_beta)
             # gamma = tf.square(in_gamma)
             # beta = tf.sqrt(tf.square(in_beta))
             # gamma = tf.sqrt(tf.square(in_gamma))
+            beta = tf.nn.sigmoid(in_beta)
+            gamma = tf.nn.sigmoid(in_gamma)
 
             # S_NN = DNN_base.srelu(S_NN_temp)
             # I_NN = DNN_base.srelu(I_NN_temp)
@@ -188,13 +203,17 @@ def solve_SIR2COVID(R):
             # I_NN = tf.square(I_NN_temp)
             # R_NN = tf.square(R_NN_temp)
 
-            # S_NN = tf.nn.sigmoid(S_NN_temp)
-            # I_NN = tf.nn.sigmoid(I_NN_temp)
-            # R_NN = DNN_base.gauss(R_NN_temp)
-
-            S_NN = DNN_base.gauss(S_NN_temp)
+            S_NN = tf.nn.sigmoid(S_NN_temp)
             I_NN = tf.nn.sigmoid(I_NN_temp)
             R_NN = tf.nn.sigmoid(R_NN_temp)
+
+            # S_NN = DNN_base.gauss(S_NN_temp)
+            # I_NN = tf.square(I_NN_temp)
+            # R_NN = tf.nn.sigmoid(R_NN_temp)
+
+            # S_NN = DNN_base.gauss(S_NN_temp)
+            # I_NN = tf.nn.sigmoid(I_NN_temp)
+            # R_NN = tf.square(R_NN_temp)
 
             # S_NN = tf.sqrt(tf.square(S_NN_temp))
             # I_NN = tf.sqrt(tf.square(I_NN_temp))
@@ -256,7 +275,7 @@ def solve_SIR2COVID(R):
             Loss2S = Loss2dS + PWB2S
             Loss2I = predict_true_penalty * LossI_Net_obs + Loss2dI + PWB2I
             Loss2R = Loss2dR + PWB2R
-            Loss2All = predict_true_penalty*LossN_Net_obs + Loss2dN
+            Loss2All = predict_true_penalty * LossN_Net_obs + Loss2dN
 
             my_optimizer = tf.train.AdamOptimizer(in_learning_rate)
             train_Loss2S = my_optimizer.minimize(Loss2S, global_step=global_steps)
@@ -470,11 +489,11 @@ if __name__ == "__main__":
     # R['total_population'] = 100000
     # R['total_population'] = 1000000
     # ------------------------------------  神经网络的设置  ----------------------------------------
-    R['size2train'] = 70                  # 训练集的大小
-    R['batch_size2train'] = 20            # 训练数据的批大小
-    R['batch_size2test'] = 10             # 训练数据的批大小
-    R['opt2sample'] = 'random_sample'
-    # R['opt2sample'] = 'rand_sample_sort'
+    R['size2train'] = 70                    # 训练集的大小
+    R['batch_size2train'] = 20              # 训练数据的批大小
+    R['batch_size2test'] = 10               # 训练数据的批大小
+    R['opt2sample'] = 'random_sample'       # 训练集的选取方式--随机采样
+    # R['opt2sample'] = 'rand_sample_sort'    # 训练集的选取方式--随机采样后按时间排序
 
     R['init_penalty2predict_true'] = 50   # Regularization parameter for boundary conditions
     R['activate_stage_penalty'] = 1       # 是否开启阶段调整边界惩罚项
@@ -487,11 +506,13 @@ if __name__ == "__main__":
     # R['regular_weight_model'] = 'L1'
     R['regular_weight_model'] = 'L2'      # The model of regular weights and biases
     # R['regular_weight'] = 0.001           # Regularization parameter for weights
-    R['regular_weight'] = 0.0005          # Regularization parameter for weights
+    # R['regular_weight'] = 0.0005          # Regularization parameter for weights
+    R['regular_weight'] = 0.0001            # Regularization parameter for weights
 
     R['optimizer_name'] = 'Adam'  # 优化器
     R['loss_function'] = 'L2_loss'
     # R['loss_function'] = 'lncosh_loss'
+
     if 50000 < R['max_epoch']:
         R['learning_rate'] = 2e-4         # 学习率
         R['lr_decay'] = 5e-5              # 学习率 decay
@@ -502,29 +523,33 @@ if __name__ == "__main__":
         R['learning_rate'] = 5e-5         # 学习率
         R['lr_decay'] = 1e-5              # 学习率 decay
 
-    # R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
-    R['hidden_layers'] = (50, 50, 30, 30, 20)  # 1*50+50*50+50*30+30*30+30*20+20*1 = 5570
-    # R['hidden_layers'] = (80, 80, 60, 40, 40, 20)  # 80+80*80+80*60+60*40+40*40+40*20+20*1 = 16100
-    # R['hidden_layers'] = (100, 100, 80, 60, 60, 40)
-    # R['hidden_layers'] = (200, 100, 100, 80, 50, 50)
-    # R['hidden_layers'] = (300, 200, 200, 100, 80, 80)
-    # R['hidden_layers'] = (400, 300, 300, 200, 100, 100)
-    # R['hidden_layers'] = (500, 400, 300, 200, 200, 100, 100)
-    # R['hidden_layers'] = (600, 400, 400, 300, 200, 200, 100)
-    # R['hidden_layers'] = (1000, 500, 400, 300, 300, 200, 100, 100)
-
     # 网络模型的选择
     # R['model'] = 'PDE_DNN'
     # R['model'] = 'PDE_DNN_BN'
     # R['model'] = 'PDE_DNN_scaleOut'
-    R['model'] = 'PDE_DNN_Fourier'
+    # R['model'] = 'PDE_DNN_Fourier'
+    R['model'] = 'DNN_Cos_C_Sin_Base'
+
+    if R['model'] == 'DNN_Cos_C_Sin_Base':
+        R['hidden_layers'] = (25, 50, 30, 30, 20)  # 1*50+50*50+50*30+30*30+30*20+20*1 = 5570
+    else:
+        # R['hidden_layers'] = (10, 10, 8, 6, 6, 3)       # it is used to debug our work
+        R['hidden_layers'] = (50, 50, 30, 30, 20)  # 1*50+50*50+50*30+30*30+30*20+20*1 = 5570
+        # R['hidden_layers'] = (80, 80, 60, 40, 40, 20)  # 80+80*80+80*60+60*40+40*40+40*20+20*1 = 16100
+        # R['hidden_layers'] = (100, 100, 80, 60, 60, 40)
+        # R['hidden_layers'] = (200, 100, 100, 80, 50, 50)
+        # R['hidden_layers'] = (300, 200, 200, 100, 80, 80)
+        # R['hidden_layers'] = (400, 300, 300, 200, 100, 100)
+        # R['hidden_layers'] = (500, 400, 300, 200, 200, 100, 100)
+        # R['hidden_layers'] = (600, 400, 400, 300, 200, 200, 100)
+        # R['hidden_layers'] = (1000, 500, 400, 300, 300, 200, 100, 100)
 
     # 激活函数的选择
     # R['act_name'] = 'relu'
-    R['act_name'] = 'tanh'
+    # R['act_name'] = 'tanh'
     # R['act_name'] = 'leaky_relu'
     # R['act_name'] = 'srelu'
-    # R['act_name'] = 's2relu'
+    R['act_name'] = 's2relu'
     # R['act_name'] = 'slrelu'
     # R['act_name'] = 'elu'
     # R['act_name'] = 'selu'
