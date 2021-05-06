@@ -89,8 +89,8 @@ def solve_SIR2COVID(R):
 
             # Remark: beta, gamma,S_NN.I_NN,R_NN都应该是正的. beta.1--15之间，gamma在(0,1）使用归一化的话S_NN.I_NN,R_NN都在[0,1)范围内
             if (R['total_population'] == R['scale_population']) and R['scale_population'] != 1:
-                beta = tf.square(in_beta)
-                gamma = tf.nn.sigmoid(in_gamma)
+                beta = in_beta
+                gamma = in_gamma
                 # SNN = SNN_temp
                 # INN = INN_temp
                 # RNN = RNN_temp
@@ -122,12 +122,10 @@ def solve_SIR2COVID(R):
                 SNN = tf.nn.sigmoid(SNN_temp)
                 INN = tf.nn.sigmoid(INN_temp)
                 RNN = tf.nn.sigmoid(RNN_temp)
-                # SNN = tf.tanh(SNN_temp)
-                # INN = tf.tanh(INN_temp)
-                # RNN = tf.tanh(RNN_temp)
+
             else:
-                beta = tf.square(in_beta)
-                gamma = tf.nn.sigmoid(in_gamma)
+                beta = in_beta
+                gamma = in_gamma
 
                 # SNN = SNN_temp
                 # INN = INN_temp
@@ -140,10 +138,6 @@ def solve_SIR2COVID(R):
                 SNN = tf.nn.sigmoid(SNN_temp)
                 INN = tf.nn.sigmoid(INN_temp)
                 RNN = tf.nn.sigmoid(RNN_temp)
-
-                # SNN = tf.tanh(SNN_temp)
-                # INN = tf.tanh(INN_temp)
-                # RNN = tf.tanh(RNN_temp)
 
             N_NN = SNN + INN + RNN
 
