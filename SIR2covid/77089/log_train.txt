@@ -1,0 +1,907 @@
+Equation name for problem: SIR
+
+Network model for SIR: DNN
+
+Network model for parameters: DNN
+
+activate function for SIR : tanh
+
+activate function for parameters : tanh
+
+hidden layers for SIR: (70, 50, 30, 30, 20)
+
+hidden layers for parameters: (70, 50, 30, 30, 20)
+
+Init learning rate: 0.0001
+
+Decay to learning rate: 5e-05
+
+The type for Loss function: L2_loss
+
+optimizer:Adam
+
+activate the stop_step and given_step= 50000
+
+Initial penalty for difference of predict and true: 1
+
+The model of regular weights and biases: L2
+
+Regularization parameter for weights and biases: 5e-05
+
+Size 2 training set: 70
+
+Batch-size 2 training: 20
+
+Batch-size 2 testing: 10
+
+The test data about i:
+[[0.00108787 0.00108971 0.00109053 0.00109186 0.00109278 0.0010939
+  0.00109472 0.00109534 0.00109636 0.00109738]]
+
+train epoch: 0,time: 1.863
+learning rate: 0.000100
+penalty for difference of predict and true : 1.000000
+penalty weights and biases for S: 0.008145
+penalty weights and biases for I: 0.007994
+penalty weights and biases for R: 0.0079465145
+loss for S: 794.6952514648437500
+loss for I: 4116.2124023437500000
+loss for R: 161.4153747558593750
+loss for N: 7902.6923828125000000
+total loss: 12975.0312500000000000 
+
+
+mean square error of predict and real for testing: 0.2043505907
+residual error of predict and real for testing: 171039.8906250000
+
+
+train epoch: 1000,time: 4.972
+learning rate: 0.000095
+penalty for difference of predict and true : 1.000000
+penalty weights and biases for S: 0.008153
+penalty weights and biases for I: 0.008036
+penalty weights and biases for R: 0.0079564089
+loss for S: 0.5774238705635071
+loss for I: 25.9665241241455078
+loss for R: 0.3312343060970306
+loss for N: 0.7939844727516174
+total loss: 27.6850910186767578 
+
+
+mean square error of predict and real for testing: 0.0010239338
+residual error of predict and real for testing: 857.0247802734
+
+
+train epoch: 2000,time: 7.806
+learning rate: 0.000090
+penalty for difference of predict and true : 1.000000
+penalty weights and biases for S: 0.008153
+penalty weights and biases for I: 0.008060
+penalty weights and biases for R: 0.0079561537
+loss for S: 0.0294507145881653
+loss for I: 3.9608972072601318
+loss for R: 0.0284949168562889
+loss for N: 0.0057955728843808
+total loss: 4.0405640602111816 
+
+
+mean square error of predict and real for testing: 0.0002959564
+residual error of predict and real for testing: 247.7132415771
+
+
+train epoch: 3000,time: 10.945
+learning rate: 0.000086
+penalty for difference of predict and true : 1.000000
+penalty weights and biases for S: 0.008152
+penalty weights and biases for I: 0.008081
+penalty weights and biases for R: 0.0079559423
+loss for S: 0.0166465006768703
+loss for I: 1.4887410402297974
+loss for R: 0.0131191881373525
+loss for N: 0.0004295143298805
+total loss: 1.5348639488220215 
+
+
+mean square error of predict and real for testing: 0.0001295461
+residual error of predict and real for testing: 108.4291229248
+
+
+train epoch: 4000,time: 14.312
+learning rate: 0.000082
+penalty for difference of predict and true : 1.000000
+penalty weights and biases for S: 0.008151
+penalty weights and biases for I: 0.008098
+penalty weights and biases for R: 0.0079550873
+loss for S: 0.0205235593020916
+loss for I: 1.1714359521865845
+loss for R: 0.0159463640302420
+loss for N: 0.0017422056989744
+total loss: 1.2255769968032837 
+
+
+mean square error of predict and real for testing: 0.0000717298
+residual error of predict and real for testing: 60.0372581482
+
+
+train epoch: 5000,time: 17.555
+learning rate: 0.000078
+penalty for difference of predict and true : 10.000000
+penalty weights and biases for S: 0.008150
+penalty weights and biases for I: 0.008115
+penalty weights and biases for R: 0.0079539651
+loss for S: 0.0149093717336655
+loss for I: 5.3054585456848145
+loss for R: 0.0116115519776940
+loss for N: 0.0018197984900326
+total loss: 5.3497281074523926 
+
+
+mean square error of predict and real for testing: 0.0000432303
+residual error of predict and real for testing: 36.1834640503
+
+
+train epoch: 6000,time: 20.652
+learning rate: 0.000074
+penalty for difference of predict and true : 10.000000
+penalty weights and biases for S: 0.008150
+penalty weights and biases for I: 0.008181
+penalty weights and biases for R: 0.0079514477
+loss for S: 0.0124071352183819
+loss for I: 1.5930434465408325
+loss for R: 0.0102795790880919
+loss for N: 0.0065335431136191
+total loss: 1.6381922960281372 
+
+
+mean square error of predict and real for testing: 0.0000065451
+residual error of predict and real for testing: 5.4781990051
+
+
+train epoch: 7000,time: 23.630
+learning rate: 0.000070
+penalty for difference of predict and true : 10.000000
+penalty weights and biases for S: 0.008150
+penalty weights and biases for I: 0.008211
+penalty weights and biases for R: 0.0079505406
+loss for S: 0.0095325792208314
+loss for I: 0.5223380327224731
+loss for R: 0.0089007299393415
+loss for N: 0.0024791413452476
+total loss: 0.5591769218444824 
+
+
+mean square error of predict and real for testing: 0.0000025134
+residual error of predict and real for testing: 2.1036860943
+
+
+train epoch: 8000,time: 26.781
+learning rate: 0.000067
+penalty for difference of predict and true : 10.000000
+penalty weights and biases for S: 0.008149
+penalty weights and biases for I: 0.008234
+penalty weights and biases for R: 0.0079497145
+loss for S: 0.0093567799776793
+loss for I: 0.2622268795967102
+loss for R: 0.0083384690806270
+loss for N: 0.0006835368694738
+total loss: 0.2965285778045654 
+
+
+mean square error of predict and real for testing: 0.0000010393
+residual error of predict and real for testing: 0.8698608279
+
+
+train epoch: 9000,time: 29.411
+learning rate: 0.000064
+penalty for difference of predict and true : 10.000000
+penalty weights and biases for S: 0.008148
+penalty weights and biases for I: 0.008254
+penalty weights and biases for R: 0.0079488568
+loss for S: 0.0087519288063049
+loss for I: 0.1126528978347778
+loss for R: 0.0081664826720953
+loss for N: 0.0001781126047717
+total loss: 0.1456666737794876 
+
+
+mean square error of predict and real for testing: 0.0000003962
+residual error of predict and real for testing: 0.3315782845
+
+
+train epoch: 10000,time: 32.044
+learning rate: 0.000061
+penalty for difference of predict and true : 50.000000
+penalty weights and biases for S: 0.008146
+penalty weights and biases for I: 0.008271
+penalty weights and biases for R: 0.0079480708
+loss for S: 0.0088708344846964
+loss for I: 0.4721823036670685
+loss for R: 0.0081439083442092
+loss for N: 0.0575833432376385
+total loss: 0.5626888871192932 
+
+
+mean square error of predict and real for testing: 0.0000001140
+residual error of predict and real for testing: 0.0953973159
+
+
+train epoch: 11000,time: 34.703
+learning rate: 0.000058
+penalty for difference of predict and true : 50.000000
+penalty weights and biases for S: 0.008146
+penalty weights and biases for I: 0.008317
+penalty weights and biases for R: 0.0079482449
+loss for S: 0.0088677974417806
+loss for I: 0.1242144256830215
+loss for R: 0.0085243098437786
+loss for N: 0.0006799710099585
+total loss: 0.1581814736127853 
+
+
+mean square error of predict and real for testing: 0.0000000127
+residual error of predict and real for testing: 0.0105981836
+
+
+train epoch: 12000,time: 37.305
+learning rate: 0.000055
+penalty for difference of predict and true : 50.000000
+penalty weights and biases for S: 0.008146
+penalty weights and biases for I: 0.008341
+penalty weights and biases for R: 0.0079481546
+loss for S: 0.0096714170649648
+loss for I: 0.1850396990776062
+loss for R: 0.0086085246875882
+loss for N: 0.0008747354731895
+total loss: 0.2200687974691391 
+
+
+mean square error of predict and real for testing: 0.0000000847
+residual error of predict and real for testing: 0.0709296837
+
+
+train epoch: 13000,time: 39.940
+learning rate: 0.000052
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008146
+penalty weights and biases for I: 0.008366
+penalty weights and biases for R: 0.0079481062
+loss for S: 0.0092647364363074
+loss for I: 0.2880596816539764
+loss for R: 0.0083876671269536
+loss for N: 0.0017160796560347
+total loss: 0.3232714235782623 
+
+
+mean square error of predict and real for testing: 0.0000001762
+residual error of predict and real for testing: 0.1474783570
+
+
+train epoch: 14000,time: 42.552
+learning rate: 0.000050
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008145
+penalty weights and biases for I: 0.008385
+penalty weights and biases for R: 0.0079480633
+loss for S: 0.0088399397209287
+loss for I: 0.2013525366783142
+loss for R: 0.0082275746390224
+loss for N: 0.0123286154121161
+total loss: 0.2465454041957855 
+
+
+mean square error of predict and real for testing: 0.0000002223
+residual error of predict and real for testing: 0.1860765964
+
+
+train epoch: 15000,time: 45.202
+learning rate: 0.000047
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008145
+penalty weights and biases for I: 0.008401
+penalty weights and biases for R: 0.0079480130
+loss for S: 0.0088430624455214
+loss for I: 0.2025123983621597
+loss for R: 0.0082100667059422
+loss for N: 0.0015285037225112
+total loss: 0.2368220239877701 
+
+
+mean square error of predict and real for testing: 0.0000002188
+residual error of predict and real for testing: 0.1831543148
+
+
+train epoch: 16000,time: 47.826
+learning rate: 0.000045
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008145
+penalty weights and biases for I: 0.008441
+penalty weights and biases for R: 0.0079479963
+loss for S: 0.0087087936699390
+loss for I: 0.0709581598639488
+loss for R: 0.0081923706457019
+loss for N: 0.0114456722512841
+total loss: 0.1149327680468559 
+
+
+mean square error of predict and real for testing: 0.0000000047
+residual error of predict and real for testing: 0.0039231456
+
+
+train epoch: 17000,time: 50.463
+learning rate: 0.000043
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008144
+penalty weights and biases for I: 0.008477
+penalty weights and biases for R: 0.0079480018
+loss for S: 0.0088995564728975
+loss for I: 0.0395814925432205
+loss for R: 0.0083607845008373
+loss for N: 0.0005563682643697
+total loss: 0.0728843063116074 
+
+
+mean square error of predict and real for testing: 0.0000000013
+residual error of predict and real for testing: 0.0010544631
+
+
+train epoch: 18000,time: 53.098
+learning rate: 0.000041
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008144
+penalty weights and biases for I: 0.008496
+penalty weights and biases for R: 0.0079479646
+loss for S: 0.0092360451817513
+loss for I: 0.0560509078204632
+loss for R: 0.0084647247567773
+loss for N: 0.0162521377205849
+total loss: 0.1052907556295395 
+
+
+mean square error of predict and real for testing: 0.0000000003
+residual error of predict and real for testing: 0.0002840354
+
+
+train epoch: 19000,time: 55.718
+learning rate: 0.000039
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008143
+penalty weights and biases for I: 0.008508
+penalty weights and biases for R: 0.0079481816
+loss for S: 0.0087449178099632
+loss for I: 0.0348511897027493
+loss for R: 0.0083221262320876
+loss for N: 0.0365649275481701
+total loss: 0.1034970879554749 
+
+
+mean square error of predict and real for testing: 0.0000000000
+residual error of predict and real for testing: 0.0000031629
+
+
+train epoch: 20000,time: 58.362
+learning rate: 0.000037
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008143
+penalty weights and biases for I: 0.008511
+penalty weights and biases for R: 0.0079480791
+loss for S: 0.0085421605035663
+loss for I: 0.0217142086476088
+loss for R: 0.0082048056647182
+loss for N: 0.0048354878090322
+total loss: 0.0579450614750385 
+
+
+mean square error of predict and real for testing: 0.0000000001
+residual error of predict and real for testing: 0.0000436085
+
+
+train epoch: 21000,time: 61.004
+learning rate: 0.000035
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008142
+penalty weights and biases for I: 0.008509
+penalty weights and biases for R: 0.0079480447
+loss for S: 0.0088622551411390
+loss for I: 0.0287557616829872
+loss for R: 0.0083379112184048
+loss for N: 0.0009472511010244
+total loss: 0.0610664077103138 
+
+
+mean square error of predict and real for testing: 0.0000000005
+residual error of predict and real for testing: 0.0003844017
+
+
+train epoch: 22000,time: 63.613
+learning rate: 0.000033
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008142
+penalty weights and biases for I: 0.008498
+penalty weights and biases for R: 0.0079480251
+loss for S: 0.0085255512967706
+loss for I: 0.0209716223180294
+loss for R: 0.0081263044849038
+loss for N: 0.0012729506706819
+total loss: 0.0524336211383343 
+
+
+mean square error of predict and real for testing: 0.0000000010
+residual error of predict and real for testing: 0.0008367407
+
+
+train epoch: 23000,time: 66.240
+learning rate: 0.000032
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008142
+penalty weights and biases for I: 0.008479
+penalty weights and biases for R: 0.0079480410
+loss for S: 0.0085204914212227
+loss for I: 0.0234890170395374
+loss for R: 0.0081256870180368
+loss for N: 0.0005746067618020
+total loss: 0.0534764900803566 
+
+
+mean square error of predict and real for testing: 0.0000000014
+residual error of predict and real for testing: 0.0011836138
+
+
+train epoch: 24000,time: 68.876
+learning rate: 0.000030
+penalty for difference of predict and true : 100.000000
+penalty weights and biases for S: 0.008141
+penalty weights and biases for I: 0.008450
+penalty weights and biases for R: 0.0079480466
+loss for S: 0.0083839530125260
+loss for I: 0.0139393135905266
+loss for R: 0.0080716600641608
+loss for N: 0.0013282202417031
+total loss: 0.0435780584812164 
+
+
+mean square error of predict and real for testing: 0.0000000017
+residual error of predict and real for testing: 0.0014170237
+
+
+train epoch: 25000,time: 71.510
+learning rate: 0.000029
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008141
+penalty weights and biases for I: 0.008413
+penalty weights and biases for R: 0.0079479860
+loss for S: 0.0082932906225324
+loss for I: 0.0169934108853340
+loss for R: 0.0080352379009128
+loss for N: 0.0016648096498102
+total loss: 0.0458056814968586 
+
+
+mean square error of predict and real for testing: 0.0000000019
+residual error of predict and real for testing: 0.0015622713
+
+
+train epoch: 26000,time: 74.190
+learning rate: 0.000027
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008141
+penalty weights and biases for I: 0.008404
+penalty weights and biases for R: 0.0079482170
+loss for S: 0.0082011278718710
+loss for I: 0.0140566732734442
+loss for R: 0.0079893628135324
+loss for N: 0.0001488241396146
+total loss: 0.0401048474013805 
+
+
+mean square error of predict and real for testing: 0.0000000020
+residual error of predict and real for testing: 0.0016677133
+
+
+train epoch: 27000,time: 76.825
+learning rate: 0.000026
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008141
+penalty weights and biases for I: 0.008388
+penalty weights and biases for R: 0.0079482235
+loss for S: 0.0082736806944013
+loss for I: 0.0196149013936520
+loss for R: 0.0080166831612587
+loss for N: 0.0748065337538719
+total loss: 0.1192417368292809 
+
+
+mean square error of predict and real for testing: 0.0000000022
+residual error of predict and real for testing: 0.0018011845
+
+
+train epoch: 28000,time: 79.500
+learning rate: 0.000025
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008141
+penalty weights and biases for I: 0.008363
+penalty weights and biases for R: 0.0079482095
+loss for S: 0.0083000455051661
+loss for I: 0.0202220380306244
+loss for R: 0.0080442596226931
+loss for N: 0.0014113051583990
+total loss: 0.0453283973038197 
+
+
+mean square error of predict and real for testing: 0.0000000020
+residual error of predict and real for testing: 0.0016830991
+
+
+train epoch: 29000,time: 82.159
+learning rate: 0.000023
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008141
+penalty weights and biases for I: 0.008332
+penalty weights and biases for R: 0.0079482263
+loss for S: 0.0081986850127578
+loss for I: 0.0142243374139071
+loss for R: 0.0079784281551838
+loss for N: 0.0079802172258496
+total loss: 0.0446266196668148 
+
+
+mean square error of predict and real for testing: 0.0000000018
+residual error of predict and real for testing: 0.0015370466
+
+
+train epoch: 30000,time: 84.810
+learning rate: 0.000022
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008140
+penalty weights and biases for I: 0.008302
+penalty weights and biases for R: 0.0079482403
+loss for S: 0.0083400607109070
+loss for I: 0.0250266119837761
+loss for R: 0.0080772237852216
+loss for N: 0.0051967152394354
+total loss: 0.0519091673195362 
+
+
+mean square error of predict and real for testing: 0.0000000016
+residual error of predict and real for testing: 0.0013512538
+
+
+train epoch: 31000,time: 87.461
+learning rate: 0.000021
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008140
+penalty weights and biases for I: 0.008270
+penalty weights and biases for R: 0.0079482608
+loss for S: 0.0082245375961065
+loss for I: 0.0157452765852213
+loss for R: 0.0080070197582245
+loss for N: 0.0001579284580657
+total loss: 0.0365662910044193 
+
+
+mean square error of predict and real for testing: 0.0000000015
+residual error of predict and real for testing: 0.0012524886
+
+
+train epoch: 32000,time: 90.110
+learning rate: 0.000020
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008140
+penalty weights and biases for I: 0.008238
+penalty weights and biases for R: 0.0079482589
+loss for S: 0.0083230519667268
+loss for I: 0.0209942758083344
+loss for R: 0.0080757271498442
+loss for N: 0.0002957912802231
+total loss: 0.0414428152143955 
+
+
+mean square error of predict and real for testing: 0.0000000016
+residual error of predict and real for testing: 0.0013136421
+
+
+train epoch: 33000,time: 92.736
+learning rate: 0.000019
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008140
+penalty weights and biases for I: 0.008208
+penalty weights and biases for R: 0.0079482477
+loss for S: 0.0082725472748280
+loss for I: 0.0164481438696384
+loss for R: 0.0080497870221734
+loss for N: 0.0023036508355290
+total loss: 0.0382859706878662 
+
+
+mean square error of predict and real for testing: 0.0000000010
+residual error of predict and real for testing: 0.0008724080
+
+
+train epoch: 34000,time: 95.381
+learning rate: 0.000018
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008140
+penalty weights and biases for I: 0.008180
+penalty weights and biases for R: 0.0079482645
+loss for S: 0.0082809990271926
+loss for I: 0.0162132903933525
+loss for R: 0.0080593563616276
+loss for N: 0.0008396884077229
+total loss: 0.0361817479133606 
+
+
+mean square error of predict and real for testing: 0.0000000007
+residual error of predict and real for testing: 0.0006068198
+
+
+train epoch: 35000,time: 98.005
+learning rate: 0.000017
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008140
+penalty weights and biases for I: 0.008155
+penalty weights and biases for R: 0.0079482580
+loss for S: 0.0083025498315692
+loss for I: 0.0157290343195200
+loss for R: 0.0080522764474154
+loss for N: 0.1111243143677711
+total loss: 0.1456655114889145 
+
+
+mean square error of predict and real for testing: 0.0000000008
+residual error of predict and real for testing: 0.0006725982
+
+
+train epoch: 36000,time: 100.666
+learning rate: 0.000017
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008140
+penalty weights and biases for I: 0.008129
+penalty weights and biases for R: 0.0079482477
+loss for S: 0.0082572326064110
+loss for I: 0.0131557509303093
+loss for R: 0.0080503392964602
+loss for N: 0.0037909070961177
+total loss: 0.0354546867311001 
+
+
+mean square error of predict and real for testing: 0.0000000008
+residual error of predict and real for testing: 0.0006596150
+
+
+train epoch: 37000,time: 103.277
+learning rate: 0.000016
+penalty for difference of predict and true : 200.000000
+penalty weights and biases for S: 0.008140
+penalty weights and biases for I: 0.008102
+penalty weights and biases for R: 0.0079482393
+loss for S: 0.0083097098395228
+loss for I: 0.0127751054242253
+loss for R: 0.0080793565139174
+loss for N: 0.0005342632648535
+total loss: 0.0316880233585835 
+
+
+mean square error of predict and real for testing: 0.0000000004
+residual error of predict and real for testing: 0.0003667785
+
+
+train epoch: 38000,time: 105.921
+learning rate: 0.000015
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008140
+penalty weights and biases for I: 0.008089
+penalty weights and biases for R: 0.0079483148
+loss for S: 0.0082230605185032
+loss for I: 0.0234414041042328
+loss for R: 0.0080341566354036
+loss for N: 0.0002437848888803
+total loss: 0.0417769253253937 
+
+
+mean square error of predict and real for testing: 0.0000000004
+residual error of predict and real for testing: 0.0003665664
+
+
+train epoch: 39000,time: 108.559
+learning rate: 0.000014
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008089
+penalty weights and biases for R: 0.0079483148
+loss for S: 0.0083318846300244
+loss for I: 0.0231713820248842
+loss for R: 0.0081115048378706
+loss for N: 0.0009915836853907
+total loss: 0.0423162095248699 
+
+
+mean square error of predict and real for testing: 0.0000000004
+residual error of predict and real for testing: 0.0003324884
+
+
+train epoch: 40000,time: 111.212
+learning rate: 0.000014
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008088
+penalty weights and biases for R: 0.0079483213
+loss for S: 0.0082058515399694
+loss for I: 0.0272962655872107
+loss for R: 0.0080143688246608
+loss for N: 0.0074172373861074
+total loss: 0.0525403469800949 
+
+
+mean square error of predict and real for testing: 0.0000000003
+residual error of predict and real for testing: 0.0002674783
+
+
+train epoch: 41000,time: 113.857
+learning rate: 0.000013
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008086
+penalty weights and biases for R: 0.0079483213
+loss for S: 0.0082768006250262
+loss for I: 0.0218609925359488
+loss for R: 0.0080606946721673
+loss for N: 0.0029222848825157
+total loss: 0.0426397286355495 
+
+
+mean square error of predict and real for testing: 0.0000000003
+residual error of predict and real for testing: 0.0002906453
+
+
+train epoch: 42000,time: 116.499
+learning rate: 0.000012
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008081
+penalty weights and biases for R: 0.0079483334
+loss for S: 0.0083225928246975
+loss for I: 0.0292501989752054
+loss for R: 0.0081329392269254
+loss for N: 0.0008547360775992
+total loss: 0.0480084680020809 
+
+
+mean square error of predict and real for testing: 0.0000000002
+residual error of predict and real for testing: 0.0001427304
+
+
+train epoch: 43000,time: 119.148
+learning rate: 0.000012
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008077
+penalty weights and biases for R: 0.0079483390
+loss for S: 0.0081881899386644
+loss for I: 0.0199376977980137
+loss for R: 0.0079930052161217
+loss for N: 0.0028529304545373
+total loss: 0.0403599701821804 
+
+
+mean square error of predict and real for testing: 0.0000000001
+residual error of predict and real for testing: 0.0000799872
+
+
+train epoch: 44000,time: 121.772
+learning rate: 0.000011
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008071
+penalty weights and biases for R: 0.0079483436
+loss for S: 0.0083341188728809
+loss for I: 0.0191174000501633
+loss for R: 0.0081050889566541
+loss for N: 0.0087559316307306
+total loss: 0.0456502959132195 
+
+
+mean square error of predict and real for testing: 0.0000000001
+residual error of predict and real for testing: 0.0000678776
+
+
+train epoch: 45000,time: 124.429
+learning rate: 0.000011
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008065
+penalty weights and biases for R: 0.0079483278
+loss for S: 0.0082744946703315
+loss for I: 0.0192763842642307
+loss for R: 0.0080851353704929
+loss for N: 0.1300528496503830
+total loss: 0.1669862121343613 
+
+
+mean square error of predict and real for testing: 0.0000000001
+residual error of predict and real for testing: 0.0000466874
+
+
+train epoch: 46000,time: 127.074
+learning rate: 0.000010
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008058
+penalty weights and biases for R: 0.0079483390
+loss for S: 0.0084769995883107
+loss for I: 0.0234191268682480
+loss for R: 0.0082231406122446
+loss for N: 0.0047333012335002
+total loss: 0.0461133085191250 
+
+
+mean square error of predict and real for testing: 0.0000000000
+residual error of predict and real for testing: 0.0000266723
+
+
+train epoch: 47000,time: 129.747
+learning rate: 0.000010
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008052
+penalty weights and biases for R: 0.0079483492
+loss for S: 0.0083242394030094
+loss for I: 0.0169595349580050
+loss for R: 0.0081131262704730
+loss for N: 0.0049179703928530
+total loss: 0.0395468585193157 
+
+
+mean square error of predict and real for testing: 0.0000000000
+residual error of predict and real for testing: 0.0000237305
+
+
+train epoch: 48000,time: 132.472
+learning rate: 0.000009
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008045
+penalty weights and biases for R: 0.0079483492
+loss for S: 0.0082874093204737
+loss for I: 0.0201914608478546
+loss for R: 0.0080571901053190
+loss for N: 0.0019958731718361
+total loss: 0.0397358275949955 
+
+
+mean square error of predict and real for testing: 0.0000000000
+residual error of predict and real for testing: 0.0000154614
+
+
+train epoch: 49000,time: 135.235
+learning rate: 0.000009
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008037
+penalty weights and biases for R: 0.0079483278
+loss for S: 0.0082483580335975
+loss for I: 0.0114721804857254
+loss for R: 0.0080476384609938
+loss for N: 0.0039420630782843
+total loss: 0.0328875668346882 
+
+
+mean square error of predict and real for testing: 0.0000000000
+residual error of predict and real for testing: 0.0000097796
+
+
+train epoch: 50000,time: 138.012
+learning rate: 0.000008
+penalty for difference of predict and true : 500.000000
+penalty weights and biases for S: 0.008139
+penalty weights and biases for I: 0.008030
+penalty weights and biases for R: 0.0079483474
+loss for S: 0.0081927860155702
+loss for I: 0.0134172029793262
+loss for R: 0.0080101238563657
+loss for N: 0.0061184745281935
+total loss: 0.0368932113051414 
+
+
+mean square error of predict and real for testing: 0.0000000000
+residual error of predict and real for testing: 0.0000114353
+
+
